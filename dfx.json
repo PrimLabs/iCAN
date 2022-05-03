@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "dfx": "0.9.3",
+  "canisters": {
+    "ican": {
+      "type": "motoko",
+      "main": "src/iCAN.mo"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "",
+      "args": "--max-stable-pages=131072"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  }
+}
