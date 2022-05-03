@@ -43,7 +43,7 @@ shared(installer) actor class hub() = this{
     stable var cycle_wasm : [Nat8] = [];
 
     public shared({caller}) func installCycleWasm(wasm : [Nat8]) : async (){
-        if(caller == installer.caller){
+        if(caller == owner){
             cycle_wasm := wasm
         }
     };

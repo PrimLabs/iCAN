@@ -1,60 +1,46 @@
-import TrieMap "mo:base/TrieMap";
-import TrieSet "mo:base/TrieSet";
-import Cycles "mo:base/ExperimentalCycles";
-import Iter "mo:base/Iter";
-import Time "mo:base/Time";
 import Array "mo:base/Array";
+import Account "Lib/Account";
 import Blob  "mo:base/Blob";
+import Bucket "Lib/Bucket";
+import Cycles "mo:base/ExperimentalCycles";
+import Hub "Hub";
+import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Time "mo:base/Time";
+import TrieMap "mo:base/TrieMap";
+import TrieSet "mo:base/TrieSet";
 import Types "Lib/Types";
-import Account "Lib/Account";
-import Bucket "Lib/Bucket";
-import Hub "Hub";
 
 actor iCAN{
 
     type Management = Types.Management;
     type Memo = Types.Memo;
-    type Token = Types.Token;
-    type TimeStamp = Types.TimeStamp;
     type AccountIdentifier = Types.AccountIdentifier;
     type SubAccount = Types.SubAccount;
-    type BlockIndex = Types.BlockIndex;
-    type TransferError = Types.TransferError;
-    type TransferArgs = Types.TransferArgs;
-    type TransferResult = Types.TransferResult;
-    type Address = Types.Address;
-    type AccountBalanceArgs = Types.AccountBalanceArgs;
-    type NotifyCanisterArgs = Types.NotifyCanisterArgs;
     type Ledger = Types.Ledger;
     type CMC = Types.CMC;
     type TransformArgs = Types.TransformArgs;
-    type HubError = Types.HubError;
     type HubInterface = Types.HubInterface;
     type Error = Types.Error;
-    type Transfer_log = Types.Transfer_log;
     type wasm_module = Types.wasm_module;
 
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let cmc : CMC = actor("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
-
     let TOP_UP_CANISTER_MEMO = 0x50555054 : Nat64;
-    let CREATE_MEMO = 0x41455243 : Nat64;
+    let CREATE_CANISTER_MEMO = 0x41455243 : Nat64;
     let wallet : Blob = Blob.fromArray([201, 223, 123, 241, 226, 70, 46, 73, 6, 245, 130, 56, 47, 77, 16, 214, 114, 255, 38, 91, 247, 115, 156, 236, 21, 12, 229, 20, 77, 40, 76, 40]);
     let CYCLE_THRESHOLD = 4_000_000_000_000;
     stable var administrators : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([Principal.fromText("57ucs-l2zhj-fkqjn-uhr7e-4rvjj-hhznq-axg6q-uglkc-6vwjd-cehbb-4qe")], Principal.hash, Principal.equal);
     stable var offset = 0;
     stable var cycle_wasm : [Nat8] = [];
     stable var hub_wasm : [Nat8] = [];
-
     stable var bucket_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
     stable var log_index = 0;
-    var logs = Bucket.Bucket(true);
-
     stable var entries : [(Principal, [Principal])] = [];
+    var logs = Bucket.Bucket(true);
     var hubs : TrieMap.TrieMap<Principal, [Principal]> = TrieMap.fromEntries<Principal, [Principal]>(entries.vals(), Principal.equal, Principal.hash);
 
     public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
@@ -94,9 +80,9 @@ actor iCAN{
                 switch(await ledger.transfer({
                     to = ican_cycle_ai;
                     fee = { e8s = 10_000 }; // 0.0001
-                    memo = CREATE_MEMO;
+                    memo = CREATE_CANISTER_MEMO;
                     from_subaccount = ?subaccount;
-                    amount = { e8s = amount - 29_980_000 };
+                    amount = { e8s = amount - 28_980_000 };
                     created_at_time = null;
                 })){
                     case(#Ok(block_height)){
@@ -108,6 +94,12 @@ actor iCAN{
                             case(#Ok(id)){
                                 let h : HubInterface = actor(Principal.toText(id));
                                 _addHub(caller, id);
+                                ignore await management.install_code({
+                                    arg = [];
+                                    wasm_module = hub_wasm;
+                                    mode = #install;
+                                    canister_id = id;
+                                });
                                 ignore await h.installCycleWasm(cycle_wasm);
                                 ignore await h.changeOwner(caller);
                                 ignore await management.update_settings({
@@ -141,29 +133,27 @@ actor iCAN{
     public shared({caller}) func transformIcp(
         args : TransformArgs
     ) : async Result.Result<(), Error>{
-        assert(args.icp_amount > 20_000);
+        assert(args.icp_amount > 1_010_000);
+        ignore await topUpSelf(caller);
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(args.to_canister_id));
         let cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, cycle_subaccount);
         switch(await ledger.transfer({
             to = cycle_ai;
-            fee = { e8s = 10_000 }; // 0.0001
+            fee = { e8s = 10_000 };
             memo = TOP_UP_CANISTER_MEMO;
             from_subaccount = ?subaccount;
-            amount = { e8s = args.icp_amount };
+            amount = { e8s = args.icp_amount - 1_010_000 };
             created_at_time = null;
         })){
             case(#Err(e)){
                 #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e) #" Args : " # debug_show(args))))
             };
             case(#Ok(height)){
-                ignore await ledger.notify_dfx(
+                ignore await cmc.notify_top_up(
                     {
-                          to_canister = CYCLE_MINTING_CANISTER;
-                          block_height = height;
-                          from_subaccount = ?subaccount;
-                          to_subaccount = ?cycle_subaccount;
-                          max_fee = { e8s = 10_000 };
+                        block_index = height;
+                        canister_id = args.to_canister_id;
                     }
                 );
                 #ok(())
@@ -171,7 +161,8 @@ actor iCAN{
         }
     };
 
-    public func topUpSelf(caller : Principal) : async (){
+    public shared({caller}) func topUpSelf(caller : Principal) : async (){
+        assert(caller == Principal.fromActor(iCAN));
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, cycle_subaccount);
