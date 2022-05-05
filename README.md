@@ -13,9 +13,9 @@
 
 1. iCAN = “I” CP + “Canister”
 
-It is an on-chain Canister management tool built on the ICP blockchain.
+   It is an on-chain Canister management tool built on the ICP blockchain.
 
-它是建立在 ICP 区块链上的链式Canister管理工具
+   它是建立在 ICP 区块链上的链式Canister管理工具
 
 2. iCAN helps developers manage the Canister they create by a graphical interface, to create contracts, download WebAssembly modules, manage Canister indicators, etc.
 
