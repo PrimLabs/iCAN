@@ -1,5 +1,5 @@
-import Result "mo:base/Result";
 import C "mo:base/ExperimentalCycles";
+import Result "mo:base/Result";
 
 shared({caller}) actor class CycleActor() = this{
 

@@ -174,6 +174,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
+        ignore await management.start_canister({ canister_id = id });
         ignore await management.install_code({
             arg = [];
             wasm_module = cycle_wasm;
@@ -182,7 +183,7 @@ shared(installer) actor class hub() = this{
         });
         let from : CycleInterface = actor(Principal.toText(id));
         await from.withdraw_cycles();
-        ignore await management.stop_canister({canister_id = id });
+        ignore await management.stop_canister({ canister_id = id });
         ignore await management.delete_canister({ canister_id = id });
         canisters.delete(id);
         #ok(())

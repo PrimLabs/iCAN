@@ -32,7 +32,7 @@ actor iCAN{
     let CREATE_CANISTER_MEMO = 0x41455243 : Nat64;
     let CYCLE_THRESHOLD = 4_000_000_000_000;
 
-    stable var administrators : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([Principal.fromText("57ucs-l2zhj-fkqjn-uhr7e-4rvjj-hhznq-axg6q-uglkc-6vwjd-cehbb-4qe")], Principal.hash, Principal.equal);
+    stable var administrators : TrieSet.Set<Principal> = TrieSet.empty<Principal>(Principal.hash, Principal.equal);
     stable var cycle_wasm : [Nat8] = [];
     stable var hub_wasm : [Nat8] = [];
     stable var bucket_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
