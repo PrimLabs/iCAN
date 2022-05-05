@@ -3,7 +3,6 @@ import Account "Lib/Account";
 import Blob  "mo:base/Blob";
 import Bucket "Lib/Bucket";
 import Cycles "mo:base/ExperimentalCycles";
-import Hub "Hub";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -32,29 +31,31 @@ actor iCAN{
     let TOP_UP_CANISTER_MEMO = 0x50555054 : Nat64;
     let CREATE_CANISTER_MEMO = 0x41455243 : Nat64;
     let CYCLE_THRESHOLD = 4_000_000_000_000;
+
     stable var administrators : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([Principal.fromText("57ucs-l2zhj-fkqjn-uhr7e-4rvjj-hhznq-axg6q-uglkc-6vwjd-cehbb-4qe")], Principal.hash, Principal.equal);
     stable var cycle_wasm : [Nat8] = [];
     stable var hub_wasm : [Nat8] = [];
     stable var bucket_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
     stable var log_index = 0;
     stable var entries : [(Principal, [Principal])] = [];
+
     var logs = Bucket.Bucket(true);
     var hubs : TrieMap.TrieMap<Principal, [Principal]> = TrieMap.fromEntries<Principal, [Principal]>(entries.vals(), Principal.equal, Principal.hash);
 
     public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
-        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         administrators := TrieSet.fromArray<Principal>(nas, Principal.hash, Principal.equal);
         "successfully"
     };
 
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
-        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         cycle_wasm := _wasm;
         "successfully"
     };
 
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
-        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
         "successfully"
     };
@@ -71,7 +72,7 @@ actor iCAN{
             fee = { e8s = 10_000 }; // 0.0001
             memo = CREATE_CANISTER_MEMO;
             from_subaccount = ?subaccount;
-            amount = { e8s = amount - 30_000_000 };
+            amount = { e8s = amount - 1_020_000 };
             created_at_time = null;
         })){
             case(#Ok(block_height)){
@@ -90,7 +91,7 @@ actor iCAN{
                             canister_id = id;
                         });
                         ignore await h.installCycleWasm(cycle_wasm);
-                        ignore await h.changeOwner(caller);
+                        ignore await h.changeOwner([caller]);
                         ignore await management.update_settings({
                             canister_id = id;
                             settings = {
@@ -181,9 +182,9 @@ actor iCAN{
         }
     };
 
-    public shared({caller}) func topUpSelf(caller : Principal) : async (){
-        //assert(caller == Principal.fromActor(iCAN));
-        let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
+    public shared({caller}) func topUpSelf(_caller : Principal) : async (){
+        assert(caller == Principal.fromActor(iCAN));
+        let subaccount = Blob.fromArray(Account.principalToSubAccount(_caller));
         let cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, cycle_subaccount);
         switch(await ledger.transfer({
@@ -195,7 +196,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Err(e)){
-                ignore _addLog("Top Up Self Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e))
+                ignore _addLog("Top Up Self Failed, caller : "#debug_show(_caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e))
             };
             case(#Ok(height)){
                 ignore await cmc.notify_top_up(
@@ -204,7 +205,7 @@ actor iCAN{
                       canister_id = Principal.fromActor(iCAN);
                     }
                 );
-                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()))
+                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Time.now()))
             }
         }
     };

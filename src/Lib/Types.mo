@@ -19,19 +19,12 @@ module{
         wasm : ?[Nat8];
     };
 
-    public type Record = {
-        canister_id : Principal;
-        method : {#deploy; #deposit; #start; #stop;};
-        amount : Nat;
-        times : Time.Time;
-    };
-
     public type Status = {
         cycle_balance : Nat;
         memory : Nat;
     };
 
-    ////// Management
+    /// Management
 
     public type canister_id = Principal;
 
@@ -45,9 +38,7 @@ module{
     };
 
     public type Management = actor {
-
         delete_canister : shared { canister_id : canister_id } -> async ();
-
         deposit_cycles : shared { canister_id : canister_id } -> async ();
         start_canister : shared { canister_id : canister_id } -> async ();
         stop_canister : shared { canister_id : canister_id } -> async ();
@@ -57,7 +48,6 @@ module{
             mode : { #reinstall; #upgrade; #install };
             canister_id : canister_id;
             } -> async ();
-
         create_canister : shared { settings : ?canister_settings } -> async {
             canister_id : canister_id;
         };
@@ -65,8 +55,9 @@ module{
             canister_id : Principal;
             settings : canister_settings
         }) -> async ();
-
     };
+
+    /// Ledger
 
     public type Memo = Nat64;
 
@@ -138,6 +129,7 @@ module{
         account_balance : query AccountBalanceArgs -> async Token;
         notify_dfx : NotifyCanisterArgs -> async ();
     };
+
     public type DeployArgs = {
         name : Text;
         description : Text;
@@ -151,7 +143,7 @@ module{
     };
 
     public type CycleInterface = actor{
-        withdraw_cycles : (to : ?Principal) -> async ();
+        withdraw_cycles : () -> async ();
     };
 
     public type TransformArgs = {
@@ -168,17 +160,8 @@ module{
     };
 
     public type HubInterface = actor{
-        installCycleWasm : shared(wasm : [Nat8]) -> async ();
-        changeOwner : shared(newOwner : Principal) -> async Result.Result<(), Error>
-    };
-
-    public type Transfer_log = {
-        caller : Principal;
-        from : Blob;
-        to : Blob;
-        transfer_type : {#profit; #cyclesfund;};
-        block_height : BlockIndex;
-        time : Time.Time;
+        installCycleWasm : shared(wasm : [Nat8]) -> async Result.Result<(), Error>;
+        changeOwner : shared(newOwner : [Principal]) -> async Result.Result<(), Error>
     };
 
     type NotifyError = {
@@ -191,7 +174,6 @@ module{
         #InvalidTransaction : Text;
         #Other : { error_code : Nat64; error_message : Text };
     };
-
 
     type NotifyTopUpResult = {
       #Ok : Nat;
@@ -217,7 +199,5 @@ module{
         notify_top_up : (NotifyTopUpArg) -> async (NotifyTopUpResult);
         notify_create_canister : (NotifyCreateCanisterArg) -> async (NotifyCreateCanisterResult);
     };
-
-
 
 };
