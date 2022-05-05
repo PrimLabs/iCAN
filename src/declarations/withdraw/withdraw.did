@@ -1,0 +1,5 @@
+type CycleActor = 
+ service {
+   withdraw_cycles: () -> ();
+ };
+service : () -> CycleActor

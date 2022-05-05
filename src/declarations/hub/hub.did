@@ -1,0 +1,80 @@
+type hub = 
+ service {
+   changeOwner: (vec principal) -> (Result);
+   delCanister: (principal) -> (Result);
+   deployCanister: (DeployArgs) -> (Result_4);
+   depositCycles: (principal, nat) -> (Result);
+   getCanisters: () -> (Result_3) query;
+   getOwners: () -> (vec principal) query;
+   getStatus: () -> (Result_2) query;
+   getWasm: (principal) -> (Result_1) query;
+   installCycleWasm: (vec nat8) -> (Result);
+   putCanister: (Canister) -> (Result);
+   startCanister: (principal) -> (Result);
+   stopCanister: (principal) -> (Result);
+   wallet_receive: () -> ();
+ };
+type canister_settings = 
+ record {
+   compute_allocation: opt nat;
+   controllers: opt vec principal;
+   freezing_threshold: opt nat;
+   memory_allocation: opt nat;
+ };
+type Status = 
+ record {
+   cycle_balance: nat;
+   memory: nat;
+ };
+type Result_4 = 
+ variant {
+   err: Error;
+   ok: principal;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: vec Canister;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: Status;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: vec nat8;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Error = 
+ variant {
+   Create_Canister_Failed: nat;
+   Insufficient_Cycles;
+   Invalid_Caller;
+   Invalid_CanisterId;
+   Ledger_Transfer_Failed: nat;
+   No_Record;
+   No_Wasm;
+ };
+type DeployArgs = 
+ record {
+   cycle_amount: nat;
+   description: text;
+   name: text;
+   preserve_wasm: bool;
+   settings: opt canister_settings;
+   wasm: vec nat8;
+ };
+type Canister = 
+ record {
+   canister_id: principal;
+   description: text;
+   name: text;
+   wasm: opt vec nat8;
+ };
+service : () -> hub
