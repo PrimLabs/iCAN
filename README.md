@@ -3,9 +3,15 @@
 
 *IC 生态系统中最佳易用的Canister管理平台*
 
-+ 个人开发空间
-+ 全方面图形化集中管理
-+ WebAssembly统一保存，支持复用
++ Personal development space 
+
+   个人开发空间
++ Comprehensive graphical centralized management 
+
+   全方面图形化集中管理
++ Webassemblies are saved uniformly and support reuse WebAssembly
+
+   统一保存，支持复用
 
 # INTRO 介绍
 
