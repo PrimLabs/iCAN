@@ -1,5 +1,6 @@
 # iCAN
 *“The best easy-to-use Canister Management Platform in IC ecosystem”*
+
 *IC 生态系统中最佳易用的Canister管理平台*
 
 + 个人开发空间
@@ -9,6 +10,7 @@
 # INTRO 介绍
 
 *Easy to use UI interface to deploy and manage your CANISTERS*
+
 *有易于使用的UI界面部署和管理您的Canisters*
 
 1. iCAN = “I” CP + “Canister”
