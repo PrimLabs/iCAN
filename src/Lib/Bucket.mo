@@ -39,8 +39,14 @@ module {
             #ok(())
         };
 
-        public func get(key: Nat): (Nat, ?Text) {
-            (key, do?{ Text.decodeUtf8(_loadFromSM(assets.get(key)!))! })
+        public func get(key: Nat): (Nat, Text) {
+            (
+                key,
+                switch(do?{ Text.decodeUtf8(_loadFromSM(assets.get(key)!))! }){
+                    case null { "decode log failed "};
+                    case(?t){ t }
+                }
+            )
         };
 
         // return entries

@@ -37,10 +37,10 @@ actor iCAN{
     stable var hub_wasm : [Nat8] = [];
     stable var bucket_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
     stable var log_index = 0;
-    stable var entries : [(Principal, [Principal])] = [];
+    stable var entries : [(Principal, [(Text, Principal)])] = [];
 
     var logs = Bucket.Bucket(true);
-    var hubs : TrieMap.TrieMap<Principal, [Principal]> = TrieMap.fromEntries<Principal, [Principal]>(entries.vals(), Principal.equal, Principal.hash);
+    var hubs : TrieMap.TrieMap<Principal, [(Text, Principal)]> = TrieMap.fromEntries<Principal, [(Text, Principal)]>(entries.vals(), Principal.equal, Principal.hash);
 
     public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
@@ -54,14 +54,16 @@ actor iCAN{
         "successfully"
     };
 
+    public query func getAdministrators() : async [Principal]{ TrieSet.toArray<Principal>(administrators) };
+
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
         "successfully"
     };
 
-    public shared({caller}) func createHub(amount : Nat64) : async Result.Result<Principal, Error>{
-        assert(amount > 1_020_000);
+    public shared({caller}) func createHub(name : Text, amount : Nat64) : async Result.Result<Principal, Error>{
+        assert(amount > 2_020_000); // 0.01 T for top up self, 0.01 T for create canister cost ( system cost )
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
@@ -83,7 +85,7 @@ actor iCAN{
                 })){
                     case(#Ok(id)){
                         let h : HubInterface = actor(Principal.toText(id));
-                        _addHub(caller, id);
+                        _addHub(caller, (name, id));
                         ignore await management.install_code({
                             arg = [];
                             wasm_module = hub_wasm;
@@ -116,15 +118,12 @@ actor iCAN{
     };
 
     public shared({caller}) func addHub(
+        name : Text,
         hub_id : Principal
     ) : async Text{
         switch(hubs.get(caller)){
-            case null {
-                hubs.put(caller, [hub_id])
-            };
-            case(?ps){
-                hubs.put(caller, Array.append(ps, [hub_id]))
-            }
+            case null { hubs.put(caller, [(name, hub_id)]) };
+            case(?ps){ hubs.put(caller, Array.append(ps, [(name, hub_id)])) }
         };
         "success"
     };
@@ -133,19 +132,17 @@ actor iCAN{
         hub_id : Principal
     ) : async Result.Result<(), Error>{
         switch(hubs.get(caller)){
-            case null {
-                #err(#Invalid_Caller)
-            };
+            case null { #err(#Invalid_Caller) };
             case(?ps){
-                let res = Array.init<Principal>(ps.size() - 1, Principal.fromActor(iCAN));
+                let res = Array.init<(Text, Principal)>(ps.size() - 1, ("", Principal.fromActor(iCAN)));
                 var _index = 0;
                 for(p in ps.vals()){
-                    if(p != hub_id){
+                    if(p.1 != hub_id){
                         res[_index] := p;
                         _index += 1;
                     };
                 };
-                hubs.put(caller, Array.freeze<Principal>(res));
+                hubs.put(caller, Array.freeze<(Text, Principal)>(res));
                 #ok(())
             }
         }
@@ -210,28 +207,28 @@ actor iCAN{
         }
     };
 
-    public query({caller}) func getBucket() : async [Principal]{
+    public query({caller}) func getHub() : async [(Text, Principal)]{
         switch(hubs.get(caller)){
             case null { [] };
             case(?b){ b }
         }
     };
 
-    public query({caller}) func getLog() : async [(Nat, ?Text)]{
-        let res = Array.init<(Nat, ?Text)>(log_index, (0, null));
+    public query({caller}) func getLog() : async [(Nat, Text)]{
+        let res = Array.init<(Nat, Text)>(log_index, (0, ""));
         var index = 0;
         for(l in res.vals()){
             res[index] := logs.get(index);
             index += 1;
         };
-        Array.freeze<(Nat, ?Text)>(res)
+        Array.freeze<(Nat, Text)>(res)
     };
 
-    private func _addHub(owner : Principal, canister_id : Principal){
+    private func _addHub(owner : Principal, args : (Text, Principal)){
         switch(hubs.get(owner)){
-            case(null) { hubs.put(owner,[canister_id]) };
+            case(null) { hubs.put(owner,[args]) };
             case(?b){
-                let p = Array.append(b, [canister_id]);
+                let p = Array.append(b, [args]);
                 hubs.put(owner, p);
             }
         };

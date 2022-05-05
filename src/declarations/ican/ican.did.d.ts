@@ -15,12 +15,13 @@ export interface TransformArgs {
   'icp_amount' : bigint,
 }
 export interface _SERVICE {
-  'addHub' : (arg_0: Principal) => Promise<string>,
+  'addHub' : (arg_0: string, arg_1: Principal) => Promise<string>,
   'changeAdministrator' : (arg_0: Array<Principal>) => Promise<string>,
-  'createHub' : (arg_0: bigint) => Promise<Result_1>,
+  'createHub' : (arg_0: string, arg_1: bigint) => Promise<Result_1>,
   'deleteHub' : (arg_0: Principal) => Promise<Result>,
-  'getBucket' : () => Promise<Array<Principal>>,
-  'getLog' : () => Promise<Array<[bigint, [] | [string]]>>,
+  'getAdministrators' : () => Promise<Array<Principal>>,
+  'getHub' : () => Promise<Array<[string, Principal]>>,
+  'getLog' : () => Promise<Array<[bigint, string]>>,
   'topUpSelf' : (arg_0: Principal) => Promise<undefined>,
   'transformIcp' : (arg_0: TransformArgs) => Promise<Result>,
   'uploadCycleWasm' : (arg_0: Array<number>) => Promise<string>,

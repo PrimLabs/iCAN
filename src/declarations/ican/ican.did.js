@@ -15,16 +15,17 @@ export const idlFactory = ({ IDL }) => {
     'icp_amount' : IDL.Nat64,
   });
   return IDL.Service({
-    'addHub' : IDL.Func([IDL.Principal], [IDL.Text], []),
+    'addHub' : IDL.Func([IDL.Text, IDL.Principal], [IDL.Text], []),
     'changeAdministrator' : IDL.Func([IDL.Vec(IDL.Principal)], [IDL.Text], []),
-    'createHub' : IDL.Func([IDL.Nat64], [Result_1], []),
+    'createHub' : IDL.Func([IDL.Text, IDL.Nat64], [Result_1], []),
     'deleteHub' : IDL.Func([IDL.Principal], [Result], []),
-    'getBucket' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
-    'getLog' : IDL.Func(
+    'getAdministrators' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getHub' : IDL.Func(
         [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Opt(IDL.Text)))],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal))],
         ['query'],
       ),
+    'getLog' : IDL.Func([], [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Text))], ['query']),
     'topUpSelf' : IDL.Func([IDL.Principal], [], []),
     'transformIcp' : IDL.Func([TransformArgs], [Result], []),
     'uploadCycleWasm' : IDL.Func([IDL.Vec(IDL.Nat8)], [IDL.Text], []),

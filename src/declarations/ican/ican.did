@@ -24,14 +24,18 @@ type Error =
    No_Wasm;
  };
 service : {
-  addHub: (principal) -> (text);
+  addHub: (text, principal) -> (text);
   changeAdministrator: (vec principal) -> (text);
-  createHub: (nat64) -> (Result_1);
+  createHub: (text, nat64) -> (Result_1);
   deleteHub: (principal) -> (Result);
-  getBucket: () -> (vec principal) query;
+  getAdministrators: () -> (vec principal) query;
+  getHub: () -> (vec record {
+                       text;
+                       principal;
+                     }) query;
   getLog: () -> (vec record {
                        nat;
-                       opt text;
+                       text;
                      }) query;
   topUpSelf: (principal) -> ();
   transformIcp: (TransformArgs) -> (Result);

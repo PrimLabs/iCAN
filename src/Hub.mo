@@ -128,11 +128,7 @@ shared(installer) actor class hub() = this{
             name = args.name;
             description = args.description;
             canister_id = _canister_id;
-            wasm = if(args.preserve_wasm){
-                ?args.wasm
-            }else{
-                null
-            };
+            wasm = if(args.preserve_wasm){ ?args.wasm } else { null };
         });
         #ok(_canister_id)
     };
