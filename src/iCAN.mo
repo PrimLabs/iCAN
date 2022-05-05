@@ -31,10 +31,8 @@ actor iCAN{
     let management : Management = actor("aaaaa-aa");
     let TOP_UP_CANISTER_MEMO = 0x50555054 : Nat64;
     let CREATE_CANISTER_MEMO = 0x41455243 : Nat64;
-    let wallet : Blob = Blob.fromArray([201, 223, 123, 241, 226, 70, 46, 73, 6, 245, 130, 56, 47, 77, 16, 214, 114, 255, 38, 91, 247, 115, 156, 236, 21, 12, 229, 20, 77, 40, 76, 40]);
     let CYCLE_THRESHOLD = 4_000_000_000_000;
     stable var administrators : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([Principal.fromText("57ucs-l2zhj-fkqjn-uhr7e-4rvjj-hhznq-axg6q-uglkc-6vwjd-cehbb-4qe")], Principal.hash, Principal.equal);
-    stable var offset = 0;
     stable var cycle_wasm : [Nat8] = [];
     stable var hub_wasm : [Nat8] = [];
     stable var bucket_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
@@ -44,88 +42,110 @@ actor iCAN{
     var hubs : TrieMap.TrieMap<Principal, [Principal]> = TrieMap.fromEntries<Principal, [Principal]>(entries.vals(), Principal.equal, Principal.hash);
 
     public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         administrators := TrieSet.fromArray<Principal>(nas, Principal.hash, Principal.equal);
         "successfully"
     };
 
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         cycle_wasm := _wasm;
         "successfully"
     };
 
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        //assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
         "successfully"
     };
 
     public shared({caller}) func createHub(amount : Nat64) : async Result.Result<Principal, Error>{
-        assert(amount >= 30_000_000);
+        assert(amount > 1_020_000);
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
         ignore await topUpSelf(caller);
+        ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
         switch(await ledger.transfer({
-            to = wallet;
-            fee = { e8s = 10_000 };
-            memo = 0;
+            to = ican_cycle_ai;
+            fee = { e8s = 10_000 }; // 0.0001
+            memo = CREATE_CANISTER_MEMO;
             from_subaccount = ?subaccount;
-            amount = { e8s = 28_980_000 };
+            amount = { e8s = amount - 30_000_000 };
             created_at_time = null;
         })){
-            case(#Ok(block_height_1)){
-                ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
-                switch(await ledger.transfer({
-                    to = ican_cycle_ai;
-                    fee = { e8s = 10_000 }; // 0.0001
-                    memo = CREATE_CANISTER_MEMO;
-                    from_subaccount = ?subaccount;
-                    amount = { e8s = amount - 28_980_000 };
-                    created_at_time = null;
+            case(#Ok(block_height)){
+                ignore _addLog("Transfer Top Up Fee Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
+                switch(await cmc.notify_create_canister({
+                   block_index = block_height;
+                   controller = Principal.fromActor(iCAN);
                 })){
-                    case(#Ok(block_height)){
-                        ignore _addLog("Transfer Top Up Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
-                        switch(await cmc.notify_create_canister({
-                           block_index = block_height;
-                           controller = Principal.fromActor(iCAN);
-                        })){
-                            case(#Ok(id)){
-                                let h : HubInterface = actor(Principal.toText(id));
-                                _addHub(caller, id);
-                                ignore await management.install_code({
-                                    arg = [];
-                                    wasm_module = hub_wasm;
-                                    mode = #install;
-                                    canister_id = id;
-                                });
-                                ignore await h.installCycleWasm(cycle_wasm);
-                                ignore await h.changeOwner(caller);
-                                ignore await management.update_settings({
-                                    canister_id = id;
-                                    settings = {
-                                        freezing_threshold = null;
-                                        controllers = ?[caller];
-                                        memory_allocation = null;
-                                        compute_allocation = null;
-                                    }
-                                });
-                                ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Time.now()) # "canister id : " # debug_show(id));
-                                #ok(id)
-                            };
-                            case(#Err(e)){
-                                #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
+                    case(#Ok(id)){
+                        let h : HubInterface = actor(Principal.toText(id));
+                        _addHub(caller, id);
+                        ignore await management.install_code({
+                            arg = [];
+                            wasm_module = hub_wasm;
+                            mode = #install;
+                            canister_id = id;
+                        });
+                        ignore await h.installCycleWasm(cycle_wasm);
+                        ignore await h.changeOwner(caller);
+                        ignore await management.update_settings({
+                            canister_id = id;
+                            settings = {
+                                freezing_threshold = null;
+                                controllers = ?[caller];
+                                memory_allocation = null;
+                                compute_allocation = null;
                             }
-                        }
+                        });
+                        ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Time.now()) # "canister id : " # debug_show(id));
+                        #ok(id)
                     };
                     case(#Err(e)){
-                        #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
+                        #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
                     }
                 }
             };
             case(#Err(e)){
-                #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e) #"Args : " # debug_show(amount))))
+                #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
+            }
+        }
+    };
+
+    public shared({caller}) func addHub(
+        hub_id : Principal
+    ) : async Text{
+        switch(hubs.get(caller)){
+            case null {
+                hubs.put(caller, [hub_id])
+            };
+            case(?ps){
+                hubs.put(caller, Array.append(ps, [hub_id]))
+            }
+        };
+        "success"
+    };
+
+    public shared({caller}) func deleteHub(
+        hub_id : Principal
+    ) : async Result.Result<(), Error>{
+        switch(hubs.get(caller)){
+            case null {
+                #err(#Invalid_Caller)
+            };
+            case(?ps){
+                let res = Array.init<Principal>(ps.size() - 1, Principal.fromActor(iCAN));
+                var _index = 0;
+                for(p in ps.vals()){
+                    if(p != hub_id){
+                        res[_index] := p;
+                        _index += 1;
+                    };
+                };
+                hubs.put(caller, Array.freeze<Principal>(res));
+                #ok(())
             }
         }
     };
@@ -162,7 +182,7 @@ actor iCAN{
     };
 
     public shared({caller}) func topUpSelf(caller : Principal) : async (){
-        assert(caller == Principal.fromActor(iCAN));
+        //assert(caller == Principal.fromActor(iCAN));
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, cycle_subaccount);
@@ -192,10 +212,18 @@ actor iCAN{
     public query({caller}) func getBucket() : async [Principal]{
         switch(hubs.get(caller)){
             case null { [] };
-            case(?b){
-                b
-            }
+            case(?b){ b }
         }
+    };
+
+    public query({caller}) func getLog() : async [(Nat, ?Text)]{
+        let res = Array.init<(Nat, ?Text)>(log_index, (0, null));
+        var index = 0;
+        for(l in res.vals()){
+            res[index] := logs.get(index);
+            index += 1;
+        };
+        Array.freeze<(Nat, ?Text)>(res)
     };
 
     private func _addHub(owner : Principal, canister_id : Principal){
@@ -212,6 +240,7 @@ actor iCAN{
     private func _addLog(log : Text) : Nat{
         let id = log_index;
         ignore logs.put(id, log);
+        log_index += 1;
         id
     };
 
