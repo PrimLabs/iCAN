@@ -215,6 +215,7 @@ actor iCAN{
     };
 
     public query({caller}) func getLog() : async [(Nat, Text)]{
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         let res = Array.init<(Nat, Text)>(log_index, (0, ""));
         var index = 0;
         for(l in res.vals()){
