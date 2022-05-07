@@ -134,7 +134,7 @@ module{
         name : Text;
         description : Text;
         settings : ?canister_settings;
-        wasm : [Nat8];
+        wasm : ?[Nat8];
         cycle_amount : Nat;
         preserve_wasm : Bool;
     };
