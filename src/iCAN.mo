@@ -51,6 +51,7 @@ actor iCAN{
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         cycle_wasm := _wasm;
+        ignore _addLog("Upload Cycle Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
         "successfully"
     };
 
@@ -223,6 +224,10 @@ actor iCAN{
             index += 1;
         };
         Array.freeze<(Nat, Text)>(res)
+    };
+
+    public query func getWasms() : async ([Nat8], [Nat8]){
+        (hub_wasm, cycle_wasm)
     };
 
     private func _addHub(owner : Principal, args : (Text, Principal)){

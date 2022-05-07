@@ -118,6 +118,12 @@ shared(installer) actor class hub() = this{
         };
         Cycles.add(args.cycle_amount);
         let _canister_id = (await management.create_canister({ settings = args.settings })).canister_id;
+        canisters.put(_canister_id, {
+            name = args.name;
+            description = args.description;
+            canister_id = _canister_id;
+            wasm = if(args.preserve_wasm){ args.wasm } else { null };
+        });
         switch(args.wasm){
             case (?w) {
                 ignore await management.install_code({
@@ -129,12 +135,6 @@ shared(installer) actor class hub() = this{
             };
             case null {};
         };
-        canisters.put(_canister_id, {
-            name = args.name;
-            description = args.description;
-            canister_id = _canister_id;
-            wasm = if(args.preserve_wasm){ args.wasm } else { null };
-        });
         #ok(_canister_id)
     };
 
