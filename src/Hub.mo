@@ -116,12 +116,14 @@ shared(installer) actor class hub() = this{
         });
         switch(args.wasm){
             case (?w) {
-                ignore await management.install_code({
-                    arg = [];
-                    wasm_module = w;
-                    mode = #install;
-                    canister_id = _canister_id;
-                });
+                if(w.size() != 0){
+                    ignore await management.install_code({
+                        arg = [];
+                        wasm_module = w;
+                        mode = #install;
+                        canister_id = _canister_id;
+                    });
+                }
             };
             case null {};
         };
