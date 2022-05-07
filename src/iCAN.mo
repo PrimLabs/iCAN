@@ -60,6 +60,7 @@ actor iCAN{
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
+        ignore _addLog("Upload Hub Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
         "successfully"
     };
 
