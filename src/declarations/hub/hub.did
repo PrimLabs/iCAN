@@ -7,6 +7,7 @@ type hub =
    getCanisters: () -> (Result_3) query;
    getOwners: () -> (vec principal) query;
    getStatus: () -> (Result_2) query;
+   getVersion: () -> (nat) query;
    getWasm: (principal) -> (Result_1) query;
    installCycleWasm: (vec nat8) -> (Result);
    putCanister: (Canister) -> (Result);
