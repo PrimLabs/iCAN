@@ -2,6 +2,9 @@ import Time "mo:base/Time";
 import Result "mo:base/Result";
 
 module{
+
+    /// iCAN Types
+
     public type Error = {
         #Invalid_Caller;
         #Invalid_CanisterId;
@@ -29,7 +32,40 @@ module{
         settings : canister_settings
     };
 
-    /// Management
+    public type TransformArgs = {
+        icp_amount : Nat64; // e8s
+        to_canister_id : Principal
+    };
+
+    /// Hub Types
+
+    public type HubError = {
+        #Invalid_Caller;
+        #Invalid_CanisterId;
+        #No_Wasm;
+        #Insufficient_Cycles;
+        #Transfer_Failed;
+    };
+
+    public type HubInterface = actor{
+        installCycleWasm : shared(wasm : [Nat8]) -> async Result.Result<(), Error>;
+        changeOwner : shared(newOwner : [Principal]) -> async Result.Result<(), Error>
+    };
+
+    public type DeployArgs = {
+        name : Text;
+        description : Text;
+        settings : ?canister_settings;
+        wasm : ?[Nat8];
+        cycle_amount : Nat;
+        preserve_wasm : Bool;
+    };
+
+    public type CycleInterface = actor{
+        withdraw_cycles : () -> async ();
+    };
+
+    /// Management Types
 
     public type canister_id = Principal;
 
@@ -62,7 +98,7 @@ module{
         }) -> async ();
     };
 
-    /// Ledger
+    /// Ledger Types
 
     public type Memo = Nat64;
 
@@ -135,39 +171,7 @@ module{
         notify_dfx : NotifyCanisterArgs -> async ();
     };
 
-    public type DeployArgs = {
-        name : Text;
-        description : Text;
-        settings : ?canister_settings;
-        wasm : ?[Nat8];
-        cycle_amount : Nat;
-        preserve_wasm : Bool;
-    };
-    public type InterfaceError = {
-        #Insufficient_Cycles;
-    };
-
-    public type CycleInterface = actor{
-        withdraw_cycles : () -> async ();
-    };
-
-    public type TransformArgs = {
-        icp_amount : Nat64; // e8s
-        to_canister_id : Principal
-    };
-
-    public type HubError = {
-        #Invalid_Caller;
-        #Invalid_CanisterId;
-        #No_Wasm;
-        #Insufficient_Cycles;
-        #Transfer_Failed;
-    };
-
-    public type HubInterface = actor{
-        installCycleWasm : shared(wasm : [Nat8]) -> async Result.Result<(), Error>;
-        changeOwner : shared(newOwner : [Principal]) -> async Result.Result<(), Error>
-    };
+    /// CMC Types
 
     type NotifyError = {
         #Refunded : {
