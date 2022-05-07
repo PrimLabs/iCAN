@@ -34,6 +34,10 @@ export const idlFactory = ({ IDL }) => {
   const Status = IDL.Record({ 'memory' : IDL.Nat, 'cycle_balance' : IDL.Nat });
   const Result_2 = IDL.Variant({ 'ok' : Status, 'err' : Error });
   const Result_1 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Nat8), 'err' : Error });
+  const UpdateSettingsArgs = IDL.Record({
+    'canister_id' : IDL.Principal,
+    'settings' : canister_settings,
+  });
   const hub = IDL.Service({
     'changeOwner' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
     'delCanister' : IDL.Func([IDL.Principal], [Result], []),
@@ -47,6 +51,7 @@ export const idlFactory = ({ IDL }) => {
     'putCanister' : IDL.Func([Canister], [Result], []),
     'startCanister' : IDL.Func([IDL.Principal], [Result], []),
     'stopCanister' : IDL.Func([IDL.Principal], [Result], []),
+    'updateCanisterSettings' : IDL.Func([UpdateSettingsArgs], [Result], []),
     'wallet_receive' : IDL.Func([], [], []),
   });
   return hub;

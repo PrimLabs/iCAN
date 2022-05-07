@@ -24,6 +24,11 @@ module{
         memory : Nat;
     };
 
+    public type UpdateSettingsArgs = {
+        canister_id : Principal;
+        settings : canister_settings
+    };
+
     /// Management
 
     public type canister_id = Principal;

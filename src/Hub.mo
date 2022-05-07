@@ -23,6 +23,7 @@ shared(installer) actor class hub() = this{
     type Ledger = Types.Ledger;
     type DeployArgs = Types.DeployArgs;
     type CycleInterface = Types.CycleInterface;
+    type UpdateSettingsArgs = Types.UpdateSettingsArgs;
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
@@ -138,6 +139,17 @@ shared(installer) actor class hub() = this{
         #ok(_canister_id)
     };
 
+    public shared({caller}) func updateCanisterSettings(args : UpdateSettingsArgs) : async Result.Result<(), Error> {
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        ignore await management.update_settings({
+            canister_id = args.canister_id;
+            settings = args.settings
+        });
+        #ok(())
+    };
+
     public shared({caller}) func startCanister(principal : Principal) : async Result.Result<(), Error> {
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
@@ -170,7 +182,7 @@ shared(installer) actor class hub() = this{
     };
 
     public shared({caller}) func delCanister(
-        id : Principal,
+        id : Principal
     ) : async Result.Result<(), Error>{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)

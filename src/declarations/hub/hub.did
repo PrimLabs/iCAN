@@ -12,6 +12,7 @@ type hub =
    putCanister: (Canister) -> (Result);
    startCanister: (principal) -> (Result);
    stopCanister: (principal) -> (Result);
+   updateCanisterSettings: (UpdateSettingsArgs) -> (Result);
    wallet_receive: () -> ();
  };
 type canister_settings = 
@@ -20,6 +21,11 @@ type canister_settings =
    controllers: opt vec principal;
    freezing_threshold: opt nat;
    memory_allocation: opt nat;
+ };
+type UpdateSettingsArgs = 
+ record {
+   canister_id: principal;
+   settings: canister_settings;
  };
 type Status = 
  record {

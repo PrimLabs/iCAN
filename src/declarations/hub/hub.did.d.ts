@@ -31,6 +31,10 @@ export type Result_3 = { 'ok' : Array<Canister> } |
 export type Result_4 = { 'ok' : Principal } |
   { 'err' : Error };
 export interface Status { 'memory' : bigint, 'cycle_balance' : bigint }
+export interface UpdateSettingsArgs {
+  'canister_id' : Principal,
+  'settings' : canister_settings,
+}
 export interface canister_settings {
   'freezing_threshold' : [] | [bigint],
   'controllers' : [] | [Array<Principal>],
@@ -50,6 +54,7 @@ export interface hub {
   'putCanister' : (arg_0: Canister) => Promise<Result>,
   'startCanister' : (arg_0: Principal) => Promise<Result>,
   'stopCanister' : (arg_0: Principal) => Promise<Result>,
+  'updateCanisterSettings' : (arg_0: UpdateSettingsArgs) => Promise<Result>,
   'wallet_receive' : () => Promise<undefined>,
 }
 export interface _SERVICE extends hub {}
