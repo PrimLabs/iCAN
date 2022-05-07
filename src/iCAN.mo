@@ -64,7 +64,7 @@ actor iCAN{
     };
 
     public shared({caller}) func createHub(name : Text, amount : Nat64) : async Result.Result<Principal, Error>{
-        assert(amount > 2_020_000); // 0.01 T for top up self, 0.01 T for create canister cost ( system cost )
+        assert(amount > 2_000_000);
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
         let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
@@ -98,7 +98,7 @@ actor iCAN{
                             canister_id = id;
                             settings = {
                                 freezing_threshold = null;
-                                controllers = ?[caller];
+                                controllers = ?[caller, id];
                                 memory_allocation = null;
                                 compute_allocation = null;
                             }
