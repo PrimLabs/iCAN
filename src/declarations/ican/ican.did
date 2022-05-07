@@ -37,6 +37,7 @@ service : {
                        nat;
                        text;
                      }) query;
+  getWasms: () -> (vec nat8, vec nat8) query;
   topUpSelf: (principal) -> ();
   transformIcp: (TransformArgs) -> (Result);
   uploadCycleWasm: (vec nat8) -> (text);

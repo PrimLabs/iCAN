@@ -9,6 +9,7 @@ type hub =
    getStatus: () -> (Result_2) query;
    getVersion: () -> (nat) query;
    getWasm: (principal) -> (Result_1) query;
+   init: (principal, vec nat8) -> ();
    installCycleWasm: (vec nat8) -> (Result);
    putCanister: (Canister) -> (Result);
    startCanister: (principal) -> (Result);

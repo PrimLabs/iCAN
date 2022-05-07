@@ -26,6 +26,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getLog' : IDL.Func([], [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Text))], ['query']),
+    'getWasms' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Nat8), IDL.Vec(IDL.Nat8)],
+        ['query'],
+      ),
     'topUpSelf' : IDL.Func([IDL.Principal], [], []),
     'transformIcp' : IDL.Func([TransformArgs], [Result], []),
     'uploadCycleWasm' : IDL.Func([IDL.Vec(IDL.Nat8)], [IDL.Text], []),

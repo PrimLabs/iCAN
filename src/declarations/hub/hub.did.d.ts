@@ -51,6 +51,7 @@ export interface hub {
   'getStatus' : () => Promise<Result_2>,
   'getVersion' : () => Promise<bigint>,
   'getWasm' : (arg_0: Principal) => Promise<Result_1>,
+  'init' : (arg_0: Principal, arg_1: Array<number>) => Promise<undefined>,
   'installCycleWasm' : (arg_0: Array<number>) => Promise<Result>,
   'putCanister' : (arg_0: Canister) => Promise<Result>,
   'startCanister' : (arg_0: Principal) => Promise<Result>,

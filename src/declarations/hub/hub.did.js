@@ -48,6 +48,7 @@ export const idlFactory = ({ IDL }) => {
     'getStatus' : IDL.Func([], [Result_2], ['query']),
     'getVersion' : IDL.Func([], [IDL.Nat], ['query']),
     'getWasm' : IDL.Func([IDL.Principal], [Result_1], ['query']),
+    'init' : IDL.Func([IDL.Principal, IDL.Vec(IDL.Nat8)], [], []),
     'installCycleWasm' : IDL.Func([IDL.Vec(IDL.Nat8)], [Result], []),
     'putCanister' : IDL.Func([Canister], [Result], []),
     'startCanister' : IDL.Func([IDL.Principal], [Result], []),

@@ -22,6 +22,7 @@ export interface _SERVICE {
   'getAdministrators' : () => Promise<Array<Principal>>,
   'getHub' : () => Promise<Array<[string, Principal]>>,
   'getLog' : () => Promise<Array<[bigint, string]>>,
+  'getWasms' : () => Promise<[Array<number>, Array<number>]>,
   'topUpSelf' : (arg_0: Principal) => Promise<undefined>,
   'transformIcp' : (arg_0: TransformArgs) => Promise<Result>,
   'uploadCycleWasm' : (arg_0: Array<number>) => Promise<string>,
