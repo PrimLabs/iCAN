@@ -41,11 +41,29 @@ actor iCAN{
     var logs = Bucket.Bucket(true);
     var hubs : TrieMap.TrieMap<Principal, [(Text, Principal)]> = TrieMap.fromEntries<Principal, [(Text, Principal)]>(entries.vals(), Principal.equal, Principal.hash);
 
-    public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
-        administrators := TrieSet.fromArray<Principal>(nas, Principal.hash, Principal.equal);
-        "successfully"
+    public query({caller}) func getHub() : async [(Text, Principal)]{
+        switch(hubs.get(caller)){
+            case null { [] };
+            case(?b){ b }
+        }
     };
+
+    public query({caller}) func getLog() : async [(Nat, Text)]{
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        let res = Array.init<(Nat, Text)>(log_index, (0, ""));
+        var index = 0;
+        for(l in res.vals()){
+            res[index] := logs.get(index);
+            index += 1;
+        };
+        Array.freeze<(Nat, Text)>(res)
+    };
+
+    public query func getWasms() : async ([Nat8], [Nat8]){
+        (hub_wasm, cycle_wasm)
+    };
+
+    public query func getAdministrators() : async [Principal]{ TrieSet.toArray<Principal>(administrators) };
 
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
@@ -54,7 +72,11 @@ actor iCAN{
         "successfully"
     };
 
-    public query func getAdministrators() : async [Principal]{ TrieSet.toArray<Principal>(administrators) };
+    public shared({caller}) func changeAdministrator(nas : [Principal]): async Text{
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        administrators := TrieSet.fromArray<Principal>(nas, Principal.hash, Principal.equal);
+        "successfully"
+    };
 
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
@@ -72,7 +94,7 @@ actor iCAN{
         ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
         switch(await ledger.transfer({
             to = ican_cycle_ai;
-            fee = { e8s = 10_000 }; // 0.0001
+            fee = { e8s = 10_000 };
             memo = CREATE_CANISTER_MEMO;
             from_subaccount = ?subaccount;
             amount = { e8s = amount - 1_010_000 };
@@ -205,28 +227,6 @@ actor iCAN{
                 ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Time.now()))
             }
         }
-    };
-
-    public query({caller}) func getHub() : async [(Text, Principal)]{
-        switch(hubs.get(caller)){
-            case null { [] };
-            case(?b){ b }
-        }
-    };
-
-    public query({caller}) func getLog() : async [(Nat, Text)]{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
-        let res = Array.init<(Nat, Text)>(log_index, (0, ""));
-        var index = 0;
-        for(l in res.vals()){
-            res[index] := logs.get(index);
-            index += 1;
-        };
-        Array.freeze<(Nat, Text)>(res)
-    };
-
-    public query func getWasms() : async ([Nat8], [Nat8]){
-        (hub_wasm, cycle_wasm)
     };
 
     private func _addHub(owner : Principal, args : (Text, Principal)){

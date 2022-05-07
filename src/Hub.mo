@@ -103,10 +103,10 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         // 100 000 000 000 Cycle (0.1 T) is used to keep hub available
-        if(args.cycle_amount + 100_000_000_000 >= Cycles.balance()){
+        if(args.cycle_amount + 100_000_000_000 >= Cycles.balance() or args.cycle_amount < 200_000_000_000){
             return #err(#Insufficient_Cycles)
         };
-        Cycles.add(args.cycle_amount);
+        Cycles.add(args.cycle_amount - 100_000_000_000); // 0.1 T : create canister cost
         let _canister_id = (await management.create_canister({ settings = args.settings })).canister_id;
         canisters.put(_canister_id, {
             name = args.name;
