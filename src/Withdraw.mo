@@ -3,10 +3,8 @@ import Result "mo:base/Result";
 
 shared({caller}) actor class CycleActor() = this{
 
-    type canister_id = Principal;
-
     type Management = actor{
-        deposit_cycles : shared { canister_id : canister_id } -> async ();
+        deposit_cycles : shared { canister_id : Principal } -> async ();
     };
 
     // withdraw cycles to hub canister
