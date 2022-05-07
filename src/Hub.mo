@@ -28,24 +28,13 @@ shared(installer) actor class hub() = this{
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
     stable var owners : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([installer.caller], Principal.hash, Principal.equal);
+    stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
-    stable var cycle_wasm : [Nat8] = [];
+    let CURRENT_VERSION : Nat = 0;
 
-    public shared({caller}) func installCycleWasm(wasm : [Nat8]) : async Result.Result<(), Error>{
-        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
-            return #err(#Invalid_Caller)
-        };
-        cycle_wasm := wasm;
-        #ok(())
-    };
-
-    public shared({caller}) func changeOwner(newOwners : [Principal]) : async Result.Result<(), Error>{
-        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
-            return #err(#Invalid_Caller)
-        };
-        owners := TrieSet.fromArray<Principal>(newOwners, Principal.hash, Principal.equal);
-        #ok(())
+    public query func getVersion() : async Nat{
+        CURRENT_VERSION
     };
 
     public query func getOwners() : async [Principal]{
@@ -199,6 +188,22 @@ shared(installer) actor class hub() = this{
         ignore await management.stop_canister({ canister_id = id });
         ignore await management.delete_canister({ canister_id = id });
         canisters.delete(id);
+        #ok(())
+    };
+
+    public shared({caller}) func installCycleWasm(wasm : [Nat8]) : async Result.Result<(), Error>{
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        cycle_wasm := wasm;
+        #ok(())
+    };
+
+    public shared({caller}) func changeOwner(newOwners : [Principal]) : async Result.Result<(), Error>{
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        owners := TrieSet.fromArray<Principal>(newOwners, Principal.hash, Principal.equal);
         #ok(())
     };
 
