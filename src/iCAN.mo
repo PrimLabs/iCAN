@@ -76,7 +76,7 @@ actor iCAN{
             fee = { e8s = 10_000 }; // 0.0001
             memo = CREATE_CANISTER_MEMO;
             from_subaccount = ?subaccount;
-            amount = { e8s = amount - 1_020_000 };
+            amount = { e8s = amount - 1_010_000 };
             created_at_time = null;
         })){
             case(#Ok(block_height)){
