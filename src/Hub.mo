@@ -207,6 +207,13 @@ shared(installer) actor class hub() = this{
         #ok(())
     };
 
+    // ican calls this function when creating this hub
+    public shared({caller}) func init(owner : Principal, _cycle_wasm : [Nat8]) : async (){
+        assert(TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal));
+        owners := TrieSet.fromArray<Principal>([owner], Principal.hash, Principal.equal);
+        cycle_wasm := _cycle_wasm;
+    };
+
     public func wallet_receive() : async (){
         ignore Cycles.accept(Cycles.available())
     };

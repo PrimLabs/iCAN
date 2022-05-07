@@ -30,7 +30,6 @@ actor iCAN{
     let management : Management = actor("aaaaa-aa");
     let TOP_UP_CANISTER_MEMO = 0x50555054 : Nat64;
     let CREATE_CANISTER_MEMO = 0x41455243 : Nat64;
-    let CYCLE_THRESHOLD = 4_000_000_000_000;
 
     stable var administrators : TrieSet.Set<Principal> = TrieSet.empty<Principal>();
     stable var cycle_wasm : [Nat8] = [];
@@ -94,8 +93,7 @@ actor iCAN{
                             mode = #install;
                             canister_id = id;
                         });
-                        ignore await h.installCycleWasm(cycle_wasm);
-                        ignore await h.changeOwner([caller]);
+                        ignore await h.init(caller, cycle_wasm);
                         ignore await management.update_settings({
                             canister_id = id;
                             settings = {

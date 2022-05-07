@@ -48,8 +48,7 @@ module{
     };
 
     public type HubInterface = actor{
-        installCycleWasm : shared(wasm : [Nat8]) -> async Result.Result<(), Error>;
-        changeOwner : shared(newOwner : [Principal]) -> async Result.Result<(), Error>
+        init : (owner : Principal, cycle_wasm : [Nat8]) -> async ();
     };
 
     public type DeployArgs = {
