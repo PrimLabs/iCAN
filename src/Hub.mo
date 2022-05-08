@@ -124,12 +124,6 @@ shared(installer) actor class hub() = this{
                 });
             }
         };
-        ignore do?{
-            ignore await management.update_settings({
-                canister_id = _canister_id;
-                settings = args.settings!;
-            });
-        };
         #ok(_canister_id)
     };
 
