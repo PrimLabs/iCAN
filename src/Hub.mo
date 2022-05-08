@@ -127,7 +127,7 @@ shared(installer) actor class hub() = this{
                     };
                     case(?_arg){
                         ignore await management.install_code({
-                            arg = _arg;
+                            arg = []; // do not support arg at current version
                             wasm_module = args.wasm!;
                             mode = #install;
                             canister_id = _canister_id;
