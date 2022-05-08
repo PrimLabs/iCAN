@@ -116,12 +116,24 @@ shared(installer) actor class hub() = this{
         });
         ignore do?{
             if(args.wasm!.size() != 0){
-                ignore await management.install_code({
-                    arg = [];
-                    wasm_module = args.wasm!;
-                    mode = #install;
-                    canister_id = _canister_id;
-                });
+                switch(args.deploy_arguments){
+                    case null {
+                        ignore await management.install_code({
+                            arg = [];
+                            wasm_module = args.wasm!;
+                            mode = #install;
+                            canister_id = _canister_id;
+                        });
+                    };
+                    case(?_arg){
+                        ignore await management.install_code({
+                            arg = _arg;
+                            wasm_module = args.wasm!;
+                            mode = #install;
+                            canister_id = _canister_id;
+                        });
+                    }
+                }
             }
         };
         #ok(_canister_id)

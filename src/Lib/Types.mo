@@ -47,6 +47,7 @@ module{
         name : Text;
         description : Text;
         settings : ?canister_settings;
+        deploy_arguments : ?[Nat8];
         wasm : ?[Nat8];
         cycle_amount : Nat;
         preserve_wasm : Bool;
