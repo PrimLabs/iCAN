@@ -12,6 +12,7 @@ export interface DeployArgs {
   'description' : string,
   'cycle_amount' : bigint,
   'settings' : [] | [canister_settings],
+  'deploy_arguments' : [] | [Array<number>],
 }
 export type Error = { 'Create_Canister_Failed' : bigint } |
   { 'Ledger_Transfer_Failed' : bigint } |

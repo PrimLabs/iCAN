@@ -72,6 +72,7 @@ type Error =
 type DeployArgs = 
  record {
    cycle_amount: nat;
+   deploy_arguments: opt vec nat8;
    description: text;
    name: text;
    preserve_wasm: bool;

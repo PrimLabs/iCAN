@@ -22,6 +22,7 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'cycle_amount' : IDL.Nat,
     'settings' : IDL.Opt(canister_settings),
+    'deploy_arguments' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
   const Result_4 = IDL.Variant({ 'ok' : IDL.Principal, 'err' : Error });
   const Canister = IDL.Record({
