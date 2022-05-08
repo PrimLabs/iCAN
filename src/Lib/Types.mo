@@ -39,14 +39,6 @@ module{
 
     /// Hub Types
 
-    public type HubError = {
-        #Invalid_Caller;
-        #Invalid_CanisterId;
-        #No_Wasm;
-        #Insufficient_Cycles;
-        #Transfer_Failed;
-    };
-
     public type HubInterface = actor{
         init : (owner : Principal, cycle_wasm : [Nat8]) -> async ();
     };
