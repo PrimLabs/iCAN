@@ -68,11 +68,11 @@
 
 ## 5.WebAssembly Management
 
-- Save the history of WebAssembly
+- Save the lastest version of Canister's WebAssembly
 
-  保存历史的WebAssembly文件
+  保存当前的WebAssembly文件
   
 - Download the latest WebAssembly
 
-  下载最新WebAssembly
+  下载当前Canister的WebAssembly
 
