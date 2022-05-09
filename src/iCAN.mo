@@ -229,6 +229,8 @@ actor iCAN{
         }
     };
 
+    public shared({caller}) func emergency_handle() : async Text{};
+
     private func _addHub(owner : Principal, args : (Text, Principal)){
         switch(hubs.get(owner)){
             case(null) { hubs.put(owner,[args]) };
