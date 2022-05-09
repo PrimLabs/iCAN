@@ -87,7 +87,7 @@ actor Service {
 
         // delete canister from hub canister and withdraw cycles from it ( owner only )
         // @param canister's principal
-        delCaniste : ( id : Principal ) -> async Result.Result<(), Error>;
+        delCanister : ( id : Principal ) -> async Result.Result<(), Error>;
 
         // install cycle wasm to hub canister ( owner only )
         // @param wasm : cycle wasm blob (you can deploy your own cycle wasm to your hub canister)
