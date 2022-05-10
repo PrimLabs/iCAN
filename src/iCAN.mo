@@ -5,8 +5,8 @@ import Bucket "Lib/Bucket";
 import Cycles "mo:base/ExperimentalCycles";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
+import Prim "mo:⛔";
 import Result "mo:base/Result";
-import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import TrieSet "mo:base/TrieSet";
 import Types "Lib/Types";
@@ -22,6 +22,7 @@ actor iCAN{
     type TransformArgs = Types.TransformArgs;
     type HubInterface = Types.HubInterface;
     type Error = Types.Error;
+    type EmergencyArgs = Types.EmergencyArgs;
     type wasm_module = Types.wasm_module;
 
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
@@ -68,7 +69,7 @@ actor iCAN{
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         cycle_wasm := _wasm;
-        ignore _addLog("Upload Cycle Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
+        ignore _addLog("Upload Cycle Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9));
         "successfully"
     };
 
@@ -81,7 +82,7 @@ actor iCAN{
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
-        ignore _addLog("Upload Hub Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
+        ignore _addLog("Upload Hub Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9));
         "successfully"
     };
 
@@ -91,7 +92,7 @@ actor iCAN{
         let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
         ignore await topUpSelf(caller);
-        ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
+        ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9));
         switch(await ledger.transfer({
             to = ican_cycle_ai;
             fee = { e8s = 10_000 };
@@ -101,7 +102,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Ok(block_height)){
-                ignore _addLog("Transfer Top Up Fee Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now()));
+                ignore _addLog("Transfer Top Up Fee Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9));
                 switch(await cmc.notify_create_canister({
                    block_index = block_height;
                    controller = Principal.fromActor(iCAN);
@@ -125,16 +126,16 @@ actor iCAN{
                                 compute_allocation = null;
                             }
                         });
-                        ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Time.now()) # "canister id : " # debug_show(id));
+                        ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Prim.time() >> 9) # "canister id : " # debug_show(id));
                         #ok(id)
                     };
                     case(#Err(e)){
-                        #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
+                        #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
                     }
                 }
             };
             case(#Err(e)){
-                #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
+                #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
             }
         }
     };
@@ -187,7 +188,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Err(e)){
-                #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e) #" Args : " # debug_show(args))))
+                #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 9)#" Error : " # debug_show(e) #" Args : " # debug_show(args))))
             };
             case(#Ok(height)){
                 ignore await cmc.notify_top_up(
@@ -215,7 +216,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Err(e)){
-                ignore _addLog("Top Up Self Failed, caller : "#debug_show(_caller)#" , Time : "#debug_show(Time.now())#" Error : " # debug_show(e))
+                ignore _addLog("Top Up Self Failed, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time() >> 9)#" Error : " # debug_show(e))
             };
             case(#Ok(height)){
                 ignore await cmc.notify_top_up(
@@ -224,12 +225,104 @@ actor iCAN{
                       canister_id = Principal.fromActor(iCAN);
                     }
                 );
-                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Time.now()))
+                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time() >> 9))
             }
         }
     };
 
-    public shared({caller}) func emergency_handle() : async Text{};
+    public shared({caller}) func emergency_handle(ope : EmergencyArgs) : async Text{
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        switch(ope){
+            case(#ledger_transfer((to, amount, name))){
+                let subaccount = Blob.fromArray(Account.principalToSubAccount(to));
+                let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
+                let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
+                switch(await ledger.transfer({
+                    to = ican_cycle_ai;
+                    fee = { e8s = 10_000 };
+                    memo = CREATE_CANISTER_MEMO;
+                    from_subaccount = ?subaccount;
+                    amount = { e8s = amount - 1_010_000 };
+                    created_at_time = null;
+                })){
+                    case(#Ok(block_height)){
+                        ignore _addLog("Emergency Handle : caller "# debug_show(caller) #" Transfer Top Up Fee Successfully, To Caller : "#debug_show(to)#" , Time : "#debug_show(Prim.time() >> 9));
+                        switch(await cmc.notify_create_canister({
+                           block_index = block_height;
+                           controller = Principal.fromActor(iCAN);
+                        })){
+                            case(#Ok(id)){
+                                let h : HubInterface = actor(Principal.toText(id));
+                                _addHub(to, (name, id));
+                                ignore await management.install_code({
+                                    arg = [];
+                                    wasm_module = hub_wasm;
+                                    mode = #install;
+                                    canister_id = id;
+                                });
+                                ignore await h.init(to, cycle_wasm);
+                                ignore await management.update_settings({
+                                    canister_id = id;
+                                    settings = {
+                                        freezing_threshold = null;
+                                        controllers = ?[to, id];
+                                        memory_allocation = null;
+                                        compute_allocation = null;
+                                    }
+                                });
+                                ignore _addLog("Emergency Handle : caller "# debug_show(caller) #" Create Canister Successfully, to caller : " # debug_show(to) # "Time : "#debug_show(Prim.time() >> 9) # "canister id : " # debug_show(id));
+                                "Success, Log Id : " # debug_show(id)
+                            };
+                            case(#Err(e)){
+                                "Operation Error, Id = " # debug_show(
+                                    _addLog("Emergency Handle : caller : "# debug_show(caller) #"Notify Create Canister Failed, to caller : "#debug_show(to)#" , Time : "#debug_show(Prim.time() >> 9)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))
+                                )
+                            }
+                        }
+                    };
+                    case(#Err(e)){
+                        "Operation Error, Id = " # debug_show(
+                            _addLog("Emergency Handle : caller "# debug_show(caller) #"Transfer Create Canister Fee Failed, to caller : "#debug_show(to)#" , Time : "#debug_show(Prim.time() >> 9)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))
+                        )
+                    }
+                }
+            };
+            case(#create_canister((to, height, name))){
+                switch(await cmc.notify_create_canister({
+                   block_index = height;
+                   controller = Principal.fromActor(iCAN);
+                })){
+                    case(#Ok(id)){
+                        let h : HubInterface = actor(Principal.toText(id));
+                        _addHub(to, (name, id));
+                        ignore await management.install_code({
+                            arg = [];
+                            wasm_module = hub_wasm;
+                            mode = #install;
+                            canister_id = id;
+                        });
+                        ignore await h.init(to, cycle_wasm);
+                        ignore await management.update_settings({
+                            canister_id = id;
+                            settings = {
+                                freezing_threshold = null;
+                                controllers = ?[to, id];
+                                memory_allocation = null;
+                                compute_allocation = null;
+                            }
+                        });
+                        ignore _addLog("Emergency Handle : caller : "# debug_show(caller) #" Create Canister Successfully, caller : " # debug_show(to) # "Time : "#debug_show(Prim.time() >> 9) # "canister id : " # debug_show(id));
+                        "Success, Log Id : " # debug_show(id)
+                    };
+                    case(#Err(e)){
+                        "Operation Error, Id = " # debug_show(
+                            _addLog("Emergency Handle : caller : "# debug_show(caller) #" Notify Create Canister Failed, caller : "#debug_show(to)#" , Time : "#debug_show(Prim.time() >> 9))
+                        )
+                    }
+                }
+            }
+        }
+    };
 
     private func _addHub(owner : Principal, args : (Text, Principal)){
         switch(hubs.get(owner)){
