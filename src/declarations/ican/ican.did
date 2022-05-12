@@ -33,7 +33,7 @@ service : {
                        text;
                        principal;
                      }) query;
-  getLog: () -> (vec record {
+  get_log: () -> (vec record {
                        nat;
                        text;
                      }) query;

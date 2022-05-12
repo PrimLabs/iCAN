@@ -1,4 +1,23 @@
 export const idlFactory = ({ IDL }) => {
+  const definite_canister_settings = IDL.Record({
+    'freezing_threshold' : IDL.Nat,
+    'controllers' : IDL.Vec(IDL.Principal),
+    'memory_allocation' : IDL.Nat,
+    'compute_allocation' : IDL.Nat,
+  });
+  const CanisterStatus = IDL.Record({
+    'status' : IDL.Variant({
+      'stopped' : IDL.Null,
+      'stopping' : IDL.Null,
+      'running' : IDL.Null,
+    }),
+    'freezing_threshold' : IDL.Nat,
+    'memory_size' : IDL.Nat,
+    'cycles' : IDL.Nat,
+    'settings' : definite_canister_settings,
+    'module_hash' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'idle_cycles_burned_per_second' : IDL.Float64,
+  });
   const Error = IDL.Variant({
     'Create_Canister_Failed' : IDL.Nat,
     'Ledger_Transfer_Failed' : IDL.Nat,
@@ -8,6 +27,7 @@ export const idlFactory = ({ IDL }) => {
     'Invalid_Caller' : IDL.Null,
     'No_Wasm' : IDL.Null,
   });
+  const Result_5 = IDL.Variant({ 'ok' : CanisterStatus, 'err' : Error });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : Error });
   const canister_settings = IDL.Record({
     'freezing_threshold' : IDL.Opt(IDL.Nat),
@@ -40,6 +60,7 @@ export const idlFactory = ({ IDL }) => {
     'settings' : canister_settings,
   });
   const hub = IDL.Service({
+    'canisterStatus' : IDL.Func([IDL.Principal], [Result_5], []),
     'changeOwner' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
     'delCanister' : IDL.Func([IDL.Principal], [Result], []),
     'deployCanister' : IDL.Func([DeployArgs], [Result_4], []),

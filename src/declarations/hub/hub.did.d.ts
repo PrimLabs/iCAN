@@ -5,6 +5,17 @@ export interface Canister {
   'wasm' : [] | [Array<number>],
   'description' : string,
 }
+export interface CanisterStatus {
+  'status' : { 'stopped' : null } |
+    { 'stopping' : null } |
+    { 'running' : null },
+  'freezing_threshold' : bigint,
+  'memory_size' : bigint,
+  'cycles' : bigint,
+  'settings' : definite_canister_settings,
+  'module_hash' : [] | [Array<number>],
+  'idle_cycles_burned_per_second' : number,
+}
 export interface DeployArgs {
   'preserve_wasm' : boolean,
   'name' : string,
@@ -31,6 +42,8 @@ export type Result_3 = { 'ok' : Array<Canister> } |
   { 'err' : Error };
 export type Result_4 = { 'ok' : Principal } |
   { 'err' : Error };
+export type Result_5 = { 'ok' : CanisterStatus } |
+  { 'err' : Error };
 export interface Status { 'memory' : bigint, 'cycle_balance' : bigint }
 export interface UpdateSettingsArgs {
   'canister_id' : Principal,
@@ -42,7 +55,14 @@ export interface canister_settings {
   'memory_allocation' : [] | [bigint],
   'compute_allocation' : [] | [bigint],
 }
+export interface definite_canister_settings {
+  'freezing_threshold' : bigint,
+  'controllers' : Array<Principal>,
+  'memory_allocation' : bigint,
+  'compute_allocation' : bigint,
+}
 export interface hub {
+  'canisterStatus' : (arg_0: Principal) => Promise<Result_5>,
   'changeOwner' : (arg_0: Array<Principal>) => Promise<Result>,
   'delCanister' : (arg_0: Principal) => Promise<Result>,
   'deployCanister' : (arg_0: DeployArgs) => Promise<Result_4>,
