@@ -11,12 +11,10 @@ export const idlFactory = ({ IDL }) => {
       'stopping' : IDL.Null,
       'running' : IDL.Null,
     }),
-    'freezing_threshold' : IDL.Nat,
     'memory_size' : IDL.Nat,
     'cycles' : IDL.Nat,
     'settings' : definite_canister_settings,
     'module_hash' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'idle_cycles_burned_per_second' : IDL.Float64,
   });
   const Error = IDL.Variant({
     'Create_Canister_Failed' : IDL.Nat,

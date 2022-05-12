@@ -95,8 +95,6 @@ type DeployArgs =
 type CanisterStatus = 
  record {
    cycles: nat;
-   freezing_threshold: nat;
-   idle_cycles_burned_per_second: float64;
    memory_size: nat;
    module_hash: opt blob;
    settings: definite_canister_settings;

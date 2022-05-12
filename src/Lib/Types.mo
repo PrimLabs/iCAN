@@ -83,8 +83,6 @@ module{
         module_hash: ?Blob;
         memory_size: Nat;
         cycles: Nat;
-        freezing_threshold: Nat;
-        idle_cycles_burned_per_second: Float;
     };
 
     public type Management = actor {
@@ -112,7 +110,6 @@ module{
             memory_size: Nat;
             cycles: Nat;
             freezing_threshold: Nat;
-            idle_cycles_burned_per_second: Float;
         });
 
     };

@@ -9,12 +9,10 @@ export interface CanisterStatus {
   'status' : { 'stopped' : null } |
     { 'stopping' : null } |
     { 'running' : null },
-  'freezing_threshold' : bigint,
   'memory_size' : bigint,
   'cycles' : bigint,
   'settings' : definite_canister_settings,
   'module_hash' : [] | [Array<number>],
-  'idle_cycles_burned_per_second' : number,
 }
 export interface DeployArgs {
   'preserve_wasm' : boolean,
