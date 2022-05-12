@@ -70,6 +70,13 @@ module{
         compute_allocation : ?Nat;
     };
 
+    public type definite_canister_settings = {
+        controllers : [Principal];
+        compute_allocation : Nat;
+        memory_allocation : Nat;
+        freezing_threshold : Nat;
+    };
+
     public type Management = actor {
         delete_canister : shared { canister_id : canister_id } -> async ();
         deposit_cycles : shared { canister_id : canister_id } -> async ();
@@ -88,6 +95,16 @@ module{
             canister_id : Principal;
             settings : canister_settings
         }) -> async ();
+        canister_status : ({canister_id : canister_id}) -> async ({
+            status : { #running; #stopping; #stopped };
+            settings: definite_canister_settings;
+            module_hash: ?Blob;
+            memory_size: Nat;
+            cycles: Nat;
+            freezing_threshold: Nat;
+            idle_cycles_burned_per_second: Float;
+        });
+
     };
 
     /// Ledger Types
@@ -199,6 +216,13 @@ module{
     public type CMC = actor{
         notify_top_up : (NotifyTopUpArg) -> async (NotifyTopUpResult);
         notify_create_canister : (NotifyCreateCanisterArg) -> async (NotifyCreateCanisterResult);
+    };
+
+    // Emergency Types
+
+    public type EmergencyArgs = {
+        #ledger_transfer : (Principal, Nat64, Text);
+        #create_canister : (Principal, Nat64, Text); // user's principal, transfer blohck index, hub name
     };
 
 };

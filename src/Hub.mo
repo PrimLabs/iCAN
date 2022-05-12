@@ -92,6 +92,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
+        ignore await management.canister_status({ canister_id = c.canister_id });
         canisters.put(c.canister_id, c);
         #ok(())
     };
