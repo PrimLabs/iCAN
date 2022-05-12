@@ -87,11 +87,14 @@ shared(installer) actor class hub() = this{
         }
     };
 
+    public shared({caller}) func
+
     // put & change
     public shared({caller}) func putCanister(c : Canister) : async Result.Result<(), Error>{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
+        // inspect if hub canister is one of the controllers
         ignore await management.canister_status({ canister_id = c.canister_id });
         canisters.put(c.canister_id, c);
         #ok(())
