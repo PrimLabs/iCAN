@@ -16,6 +16,7 @@ shared(installer) actor class hub() = this{
 
     type Error = Types.Error;
     type Canister = Types.Canister;
+    type CanisterStatus = Types.CanisterStatus;
     type Status = Types.Status;
     type canister_id = Types.canister_id;
     type wasm_module = Types.wasm_module;
@@ -87,7 +88,12 @@ shared(installer) actor class hub() = this{
         }
     };
 
-    public shared({caller}) func
+    public shared({caller}) func canisterStatus(id : Principal) : async Result.Result<CanisterStatus, Error>{
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        #ok(await management.canister_status({ canister_id = id }))
+    };
 
     // put & change
     public shared({caller}) func putCanister(c : Canister) : async Result.Result<(), Error>{

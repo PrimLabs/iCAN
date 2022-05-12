@@ -77,6 +77,16 @@ module{
         freezing_threshold : Nat;
     };
 
+    public type CanisterStatus = {
+        status : { #running; #stopping; #stopped };
+        settings: definite_canister_settings;
+        module_hash: ?Blob;
+        memory_size: Nat;
+        cycles: Nat;
+        freezing_threshold: Nat;
+        idle_cycles_burned_per_second: Float;
+    };
+
     public type Management = actor {
         delete_canister : shared { canister_id : canister_id } -> async ();
         deposit_cycles : shared { canister_id : canister_id } -> async ();
