@@ -12,6 +12,7 @@ type hub =
    getWasm: (principal) -> (Result_1) query;
    init: (principal, vec nat8) -> ();
    installCycleWasm: (vec nat8) -> (Result);
+   installWasm: (InstallArgs) -> (Result);
    putCanister: (Canister) -> (Result);
    startCanister: (principal) -> (Result);
    stopCanister: (principal) -> (Result);
@@ -71,6 +72,17 @@ type Result =
  variant {
    err: Error;
    ok;
+ };
+type InstallArgs = 
+ record {
+   arg: vec nat8;
+   canister_id: principal;
+   mode: variant {
+           install;
+           reinstall;
+           upgrade;
+         };
+   wasm_module: vec nat8;
  };
 type Error = 
  variant {

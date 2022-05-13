@@ -30,6 +30,14 @@ export type Error = { 'Create_Canister_Failed' : bigint } |
   { 'Invalid_CanisterId' : null } |
   { 'Invalid_Caller' : null } |
   { 'No_Wasm' : null };
+export interface InstallArgs {
+  'arg' : Array<number>,
+  'wasm_module' : Array<number>,
+  'mode' : { 'reinstall' : null } |
+    { 'upgrade' : null } |
+    { 'install' : null },
+  'canister_id' : Principal,
+}
 export type Result = { 'ok' : null } |
   { 'err' : Error };
 export type Result_1 = { 'ok' : Array<number> } |
@@ -72,6 +80,7 @@ export interface hub {
   'getWasm' : (arg_0: Principal) => Promise<Result_1>,
   'init' : (arg_0: Principal, arg_1: Array<number>) => Promise<undefined>,
   'installCycleWasm' : (arg_0: Array<number>) => Promise<Result>,
+  'installWasm' : (arg_0: InstallArgs) => Promise<Result>,
   'putCanister' : (arg_0: Canister) => Promise<Result>,
   'startCanister' : (arg_0: Principal) => Promise<Result>,
   'stopCanister' : (arg_0: Principal) => Promise<Result>,

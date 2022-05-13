@@ -53,6 +53,16 @@ export const idlFactory = ({ IDL }) => {
   const Status = IDL.Record({ 'memory' : IDL.Nat, 'cycle_balance' : IDL.Nat });
   const Result_2 = IDL.Variant({ 'ok' : Status, 'err' : Error });
   const Result_1 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Nat8), 'err' : Error });
+  const InstallArgs = IDL.Record({
+    'arg' : IDL.Vec(IDL.Nat8),
+    'wasm_module' : IDL.Vec(IDL.Nat8),
+    'mode' : IDL.Variant({
+      'reinstall' : IDL.Null,
+      'upgrade' : IDL.Null,
+      'install' : IDL.Null,
+    }),
+    'canister_id' : IDL.Principal,
+  });
   const UpdateSettingsArgs = IDL.Record({
     'canister_id' : IDL.Principal,
     'settings' : canister_settings,
@@ -70,6 +80,7 @@ export const idlFactory = ({ IDL }) => {
     'getWasm' : IDL.Func([IDL.Principal], [Result_1], ['query']),
     'init' : IDL.Func([IDL.Principal, IDL.Vec(IDL.Nat8)], [], []),
     'installCycleWasm' : IDL.Func([IDL.Vec(IDL.Nat8)], [Result], []),
+    'installWasm' : IDL.Func([InstallArgs], [Result], []),
     'putCanister' : IDL.Func([Canister], [Result], []),
     'startCanister' : IDL.Func([IDL.Principal], [Result], []),
     'stopCanister' : IDL.Func([IDL.Principal], [Result], []),
