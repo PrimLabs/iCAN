@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export interface Canister {
   'name' : string,
   'canister_id' : Principal,
@@ -68,23 +70,23 @@ export interface definite_canister_settings {
   'compute_allocation' : bigint,
 }
 export interface hub {
-  'canisterStatus' : (arg_0: Principal) => Promise<Result_5>,
-  'changeOwner' : (arg_0: Array<Principal>) => Promise<Result>,
-  'delCanister' : (arg_0: Principal) => Promise<Result>,
-  'deployCanister' : (arg_0: DeployArgs) => Promise<Result_4>,
-  'depositCycles' : (arg_0: Principal, arg_1: bigint) => Promise<Result>,
-  'getCanisters' : () => Promise<Result_3>,
-  'getOwners' : () => Promise<Array<Principal>>,
-  'getStatus' : () => Promise<Result_2>,
-  'getVersion' : () => Promise<bigint>,
-  'getWasm' : (arg_0: Principal) => Promise<Result_1>,
-  'init' : (arg_0: Principal, arg_1: Array<number>) => Promise<undefined>,
-  'installCycleWasm' : (arg_0: Array<number>) => Promise<Result>,
-  'installWasm' : (arg_0: InstallArgs) => Promise<Result>,
-  'putCanister' : (arg_0: Canister) => Promise<Result>,
-  'startCanister' : (arg_0: Principal) => Promise<Result>,
-  'stopCanister' : (arg_0: Principal) => Promise<Result>,
-  'updateCanisterSettings' : (arg_0: UpdateSettingsArgs) => Promise<Result>,
-  'wallet_receive' : () => Promise<undefined>,
+  'canisterStatus' : ActorMethod<[Principal], Result_5>,
+  'changeOwner' : ActorMethod<[Array<Principal>], Result>,
+  'delCanister' : ActorMethod<[Principal], Result>,
+  'deployCanister' : ActorMethod<[DeployArgs], Result_4>,
+  'depositCycles' : ActorMethod<[Principal, bigint], Result>,
+  'getCanisters' : ActorMethod<[], Result_3>,
+  'getOwners' : ActorMethod<[], Array<Principal>>,
+  'getStatus' : ActorMethod<[], Result_2>,
+  'getVersion' : ActorMethod<[], bigint>,
+  'getWasm' : ActorMethod<[Principal], Result_1>,
+  'init' : ActorMethod<[Principal, Array<number>], undefined>,
+  'installCycleWasm' : ActorMethod<[Array<number>], Result>,
+  'installWasm' : ActorMethod<[InstallArgs], Result>,
+  'putCanister' : ActorMethod<[Canister], Result>,
+  'startCanister' : ActorMethod<[Principal], Result>,
+  'stopCanister' : ActorMethod<[Principal], Result>,
+  'updateCanisterSettings' : ActorMethod<[UpdateSettingsArgs], Result>,
+  'wallet_receive' : ActorMethod<[], undefined>,
 }
 export interface _SERVICE extends hub {}
