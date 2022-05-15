@@ -53,6 +53,13 @@ module{
         preserve_wasm : Bool;
     };
 
+    public type InstallArgs = {
+        canister_id : Principal;
+        mode : { #install; #reinstall; #upgrade };
+        wasm_module : [Nat8];
+        arg : [Nat8]
+    };
+
     public type CycleInterface = actor{
         withdraw_cycles : () -> async ();
     };
@@ -95,7 +102,7 @@ module{
             wasm_module : wasm_module;
             mode : { #reinstall; #upgrade; #install };
             canister_id : canister_id;
-            } -> async ();
+        } -> async ();
         create_canister : shared { settings : ?canister_settings } -> async {
             canister_id : canister_id;
         };
@@ -223,13 +230,6 @@ module{
     public type CMC = actor{
         notify_top_up : (NotifyTopUpArg) -> async (NotifyTopUpResult);
         notify_create_canister : (NotifyCreateCanisterArg) -> async (NotifyCreateCanisterResult);
-    };
-
-    // Emergency Types
-
-    public type EmergencyArgs = {
-        #ledger_transfer : (Principal, Nat64, Text);
-        #create_canister : (Principal, Nat64, Text); // user's principal, transfer blohck index, hub name
     };
 
 };

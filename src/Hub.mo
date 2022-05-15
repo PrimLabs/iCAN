@@ -25,6 +25,7 @@ shared(installer) actor class hub() = this{
     type DeployArgs = Types.DeployArgs;
     type CycleInterface = Types.CycleInterface;
     type UpdateSettingsArgs = Types.UpdateSettingsArgs;
+    type InstallArgs = Types.InstallArgs;
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
@@ -32,7 +33,7 @@ shared(installer) actor class hub() = this{
     stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
-    let CURRENT_VERSION : Nat = 0;
+    let CURRENT_VERSION : Nat = 2;
 
     public query func getVersion() : async Nat{
         CURRENT_VERSION
@@ -128,7 +129,7 @@ shared(installer) actor class hub() = this{
             if(args.wasm!.size() != 0){
                 switch(args.deploy_arguments){
                     case null {
-                        ignore await management.install_code({
+                        await management.install_code({
                             arg = [];
                             wasm_module = args.wasm!;
                             mode = #install;
@@ -136,7 +137,7 @@ shared(installer) actor class hub() = this{
                         });
                     };
                     case(?_arg){
-                        ignore await management.install_code({
+                        await management.install_code({
                             arg = _arg;
                             wasm_module = args.wasm!;
                             mode = #install;
@@ -149,11 +150,19 @@ shared(installer) actor class hub() = this{
         #ok(_canister_id)
     };
 
+    public shared({caller}) func installWasm(args : InstallArgs) : async Result.Result<(), Error> {
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        await management.install_code(args);
+        #ok(())
+    };
+
     public shared({caller}) func updateCanisterSettings(args : UpdateSettingsArgs) : async Result.Result<(), Error> {
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        ignore await management.update_settings({
+        await management.update_settings({
             canister_id = args.canister_id;
             settings = args.settings
         });
@@ -164,7 +173,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        ignore await management.start_canister({ canister_id = principal });
+        await management.start_canister({ canister_id = principal });
         #ok(())
     };
 
@@ -187,7 +196,7 @@ shared(installer) actor class hub() = this{
             return #err(#Insufficient_Cycles)
         };
         Cycles.add(cycle_amount);
-        ignore await management.deposit_cycles({ canister_id = id });
+        await management.deposit_cycles({ canister_id = id });
         #ok(())
     };
 
@@ -197,17 +206,19 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        ignore await management.start_canister({ canister_id = id });
-        ignore await management.install_code({
-            arg = [];
-            wasm_module = cycle_wasm;
-            mode = #reinstall;
-            canister_id = id;
-        });
-        let from : CycleInterface = actor(Principal.toText(id));
-        await from.withdraw_cycles();
-        ignore await management.stop_canister({ canister_id = id });
-        ignore await management.delete_canister({ canister_id = id });
+        if((await management.canister_status({ canister_id = id })).cycles > 10_000_000_000) {
+            await management.start_canister({ canister_id = id });
+            await management.install_code({
+                arg = [];
+                wasm_module = cycle_wasm;
+                mode = #reinstall;
+                canister_id = id;
+            });
+            let from : CycleInterface = actor(Principal.toText(id));
+            await from.withdraw_cycles();
+        };
+        await management.stop_canister({ canister_id = id });
+        await management.delete_canister({ canister_id = id });
         canisters.delete(id);
         #ok(())
     };
