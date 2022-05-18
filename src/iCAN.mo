@@ -68,14 +68,14 @@ actor iCAN{
     public shared({caller}) func uploadCycleWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         cycle_wasm := _wasm;
-        ignore _addLog("Upload Cycle Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30));
+        ignore _addLog("Upload Cycle Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30));
         "successfully"
     };
 
     public shared({caller}) func uploadHubWasm(_wasm : [Nat8]) : async Text{
         assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         hub_wasm := _wasm;
-        ignore _addLog("Upload Hub Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30));
+        ignore _addLog("Upload Hub Wasm Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30));
         "successfully"
     };
 
@@ -91,7 +91,7 @@ actor iCAN{
         let ican_cycle_subaccount = Blob.fromArray(Account.principalToSubAccount(Principal.fromActor(iCAN)));
         let ican_cycle_ai = Account.accountIdentifier(CYCLE_MINTING_CANISTER, ican_cycle_subaccount);
         ignore topUpSelf(caller);
-        ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30));
+        ignore _addLog("Transfer Service Fee Successfully, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30));
         switch(await ledger.transfer({
             to = ican_cycle_ai;
             fee = { e8s = 10_000 };
@@ -101,7 +101,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Ok(block_height)){
-                ignore _addLog("Transfer Top Up Fee Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30));
+                ignore _addLog("Transfer Top Up Fee Successfully, Caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30));
                 switch(await cmc.notify_create_canister({
                    block_index = block_height;
                    controller = Principal.fromActor(iCAN);
@@ -125,16 +125,16 @@ actor iCAN{
                                 compute_allocation = null;
                             }
                         });
-                        ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Prim.time()>> 30) # "canister id : " # debug_show(id));
+                        ignore _addLog("Create Canister Successfully, caller : " # debug_show(caller) # "Time : "#debug_show(Prim.time() >> 30) # "canister id : " # debug_show(id));
                         #ok(id)
                     };
                     case(#Err(e)){
-                        #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
+                        #err(#Create_Canister_Failed(_addLog("Notify Create Canister Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))));
                     }
                 }
             };
             case(#Err(e)){
-                #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
+                #err(#Create_Canister_Failed(_addLog("Transfer Create Canister Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30)#", Error : "#debug_show(e)#" Args : " # debug_show(amount))))
             }
         }
     };
@@ -187,7 +187,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Err(e)){
-                #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time()>> 30)#" Error : " # debug_show(e) #" Args : " # debug_show(args))))
+                #err(#Ledger_Transfer_Failed(_addLog("Transfer Service Fee Failed, caller : "#debug_show(caller)#" , Time : "#debug_show(Prim.time() >> 30)#" Error : " # debug_show(e) #" Args : " # debug_show(args))))
             };
             case(#Ok(height)){
                 ignore cmc.notify_top_up(
@@ -215,7 +215,7 @@ actor iCAN{
             created_at_time = null;
         })){
             case(#Err(e)){
-                ignore _addLog("Top Up Self Failed, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time()>> 30)#" Error : " # debug_show(e))
+                ignore _addLog("Top Up Self Failed, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time() >> 30)#" Error : " # debug_show(e))
             };
             case(#Ok(height)){
                 ignore cmc.notify_top_up(
@@ -224,7 +224,7 @@ actor iCAN{
                       canister_id = Principal.fromActor(iCAN);
                     }
                 );
-                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time()>> 30))
+                ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time() >> 30))
             }
         }
     };
