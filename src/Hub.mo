@@ -33,7 +33,7 @@ shared(installer) actor class hub() = this{
     stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
-    let CURRENT_VERSION : Nat = 2;
+    let CURRENT_VERSION : Nat = 3;
 
     public query func getVersion() : async Nat{
         CURRENT_VERSION
@@ -102,7 +102,7 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         // inspect if hub canister is one of the controllers
-        ignore await management.canister_status({ canister_id = c.canister_id });
+        ignore management.canister_status({ canister_id = c.canister_id });
         canisters.put(c.canister_id, c);
         #ok(())
     };
@@ -129,7 +129,7 @@ shared(installer) actor class hub() = this{
             if(args.wasm!.size() != 0){
                 switch(args.deploy_arguments){
                     case null {
-                        await management.install_code({
+                        ignore management.install_code({
                             arg = [];
                             wasm_module = args.wasm!;
                             mode = #install;
@@ -137,7 +137,7 @@ shared(installer) actor class hub() = this{
                         });
                     };
                     case(?_arg){
-                        await management.install_code({
+                        ignore management.install_code({
                             arg = _arg;
                             wasm_module = args.wasm!;
                             mode = #install;
@@ -154,7 +154,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        await management.install_code(args);
+        ignore management.install_code(args);
         #ok(())
     };
 
@@ -162,7 +162,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        await management.update_settings({
+        ignore management.update_settings({
             canister_id = args.canister_id;
             settings = args.settings
         });
@@ -173,7 +173,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        await management.start_canister({ canister_id = principal });
+        ignore management.start_canister({ canister_id = principal });
         #ok(())
     };
 
@@ -181,7 +181,7 @@ shared(installer) actor class hub() = this{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
             return #err(#Invalid_Caller)
         };
-        await management.stop_canister({ canister_id = principal});
+        ignore management.stop_canister({ canister_id = principal});
         #ok(())
     };
 
@@ -196,7 +196,7 @@ shared(installer) actor class hub() = this{
             return #err(#Insufficient_Cycles)
         };
         Cycles.add(cycle_amount);
-        await management.deposit_cycles({ canister_id = id });
+        ignore management.deposit_cycles({ canister_id = id });
         #ok(())
     };
 
@@ -217,8 +217,8 @@ shared(installer) actor class hub() = this{
             let from : CycleInterface = actor(Principal.toText(id));
             await from.withdraw_cycles();
         };
-        await management.stop_canister({ canister_id = id });
-        await management.delete_canister({ canister_id = id });
+        ignore management.stop_canister({ canister_id = id });
+        ignore management.delete_canister({ canister_id = id });
         canisters.delete(id);
         #ok(())
     };
