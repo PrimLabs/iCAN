@@ -76,3 +76,5 @@
 
   下载当前Canister的WebAssembly
 
+## 6. Interface Spec
+- [Interface](https://github.com/PrimLabs/iCAN-Interface)
