@@ -26,14 +26,17 @@ shared(installer) actor class hub() = this{
     type CycleInterface = Types.CycleInterface;
     type UpdateSettingsArgs = Types.UpdateSettingsArgs;
     type InstallArgs = Types.InstallArgs;
-    let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
-    let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
-    let management : Management = actor("aaaaa-aa");
+
     stable var owners : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([installer.caller], Principal.hash, Principal.equal);
     stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
+
+    let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
+    let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
+    let management : Management = actor("aaaaa-aa");
+    let CURRENT_VERSION : Nat = 4;
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
-    let CURRENT_VERSION : Nat = 3;
+
 
     public query func getVersion() : async Nat{
         CURRENT_VERSION
@@ -102,7 +105,7 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         // inspect if hub canister is one of the controllers
-        ignore management.canister_status({ canister_id = c.canister_id });
+        ignore await management.canister_status({ canister_id = c.canister_id });
         canisters.put(c.canister_id, c);
         #ok(())
     };
@@ -217,7 +220,7 @@ shared(installer) actor class hub() = this{
             let from : CycleInterface = actor(Principal.toText(id));
             await from.withdraw_cycles();
         };
-        ignore management.stop_canister({ canister_id = id });
+        await management.stop_canister({ canister_id = id });
         ignore management.delete_canister({ canister_id = id });
         canisters.delete(id);
         #ok(())
