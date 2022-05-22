@@ -1,3 +1,4 @@
+![image](ican-logo.jpg)
 # iCAN
 *“The best easy-to-use Canister Management Platform in IC ecosystem”*
 
