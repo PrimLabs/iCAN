@@ -49,6 +49,11 @@ module {
             )
         };
 
+        public func clear(){
+            offset := 0;
+            assets := TrieMap.TrieMap<Nat, (Nat64, Nat)>(Nat.equal, Hash.hash);
+        };
+
         // return entries
         public func preupgrade(): (Nat, [(Nat, (Nat64, Nat))]) {
             var index = 0;

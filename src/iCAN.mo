@@ -156,15 +156,19 @@ actor iCAN{
         switch(hubs.get(caller)){
             case null { #err(#Invalid_Caller) };
             case(?ps){
-                let res = Array.init<(Text, Principal)>(ps.size() - 1, ("", Principal.fromActor(iCAN)));
-                var _index = 0;
-                for(p in ps.vals()){
-                    if(p.1 != hub_id){
-                        res[_index] := p;
-                        _index += 1;
+                if(ps.size() > 1){
+                    let res = Array.init<(Text, Principal)>(ps.size() - 1, ("", Principal.fromActor(iCAN)));
+                    var _index = 0;
+                    for(p in ps.vals()){
+                        if(p.1 != hub_id){
+                            res[_index] := p;
+                            _index += 1;
+                        };
                     };
+                    hubs.put(caller, Array.freeze<(Text, Principal)>(res));
+                }else{
+                    hubs.delete(caller);
                 };
-                hubs.put(caller, Array.freeze<(Text, Principal)>(res));
                 #ok(())
             }
         }
@@ -227,6 +231,12 @@ actor iCAN{
                 ignore _addLog("Top Up Self Successfully, caller : "#debug_show(_caller)#" , Time : "#debug_show(Prim.time() >> 30))
             }
         }
+    };
+
+    public shared({caller}) func clearLog() : async (){
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+        log_index := 0;
+        logs.clear();
     };
 
     private func _addHub(owner : Principal, args : (Text, Principal)){
