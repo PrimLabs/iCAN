@@ -11,6 +11,7 @@ import TrieMap "mo:base/TrieMap";
 import Time "mo:base/Time";
 import TrieSet "mo:base/TrieSet";
 import Types "Lib/Types";
+import Logs "Lib/logs";
 
 shared(installer) actor class hub() = this{
 
@@ -30,13 +31,25 @@ shared(installer) actor class hub() = this{
     stable var owners : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([installer.caller], Principal.hash, Principal.equal);
     stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
+    stable var log_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
 
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
     let CURRENT_VERSION : Nat = 4;
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
+    var logs = Logs.Logs(true);
 
+    public query({caller}) func getLog() : async [(Nat, Text)]{
+        assert(TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal));
+        let res = Array.init<(Nat, Text)>(log_index, (0, ""));
+        var index = 0;
+        for(l in res.vals()){
+            res[index] := logs.get(index);
+            index += 1;
+        };
+        Array.freeze<(Nat, Text)>(res)
+    };
 
     public query func getVersion() : async Nat{
         CURRENT_VERSION
@@ -91,6 +104,8 @@ shared(installer) actor class hub() = this{
             }
         }
     };
+
+    public shared({caller}) func clearLog() : async (){ logs.clear(); log_index := 0; };
 
     public shared({caller}) func canisterStatus(id : Principal) : async Result.Result<CanisterStatus, Error>{
         if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
@@ -150,6 +165,15 @@ shared(installer) actor class hub() = this{
                 }
             }
         };
+        ignore _addLog(
+                    "Deploy Canister Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(_canister_id)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(_canister_id)
     };
 
@@ -158,6 +182,17 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         ignore management.install_code(args);
+        ignore _addLog(
+                    "InstallWasm Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(args.canister_id)
+                    # " \n Mode: \n "
+                    # debug_show(args.mode)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -169,6 +204,15 @@ shared(installer) actor class hub() = this{
             canister_id = args.canister_id;
             settings = args.settings
         });
+        ignore _addLog(
+                    "Update CanisterSettings Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(args.canister_id)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -177,6 +221,15 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         ignore management.start_canister({ canister_id = principal });
+        ignore _addLog(
+                    "Start Canister Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(principal)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -185,6 +238,15 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         ignore management.stop_canister({ canister_id = principal});
+        ignore _addLog(
+                    "Stop Canister Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(principal)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -200,6 +262,17 @@ shared(installer) actor class hub() = this{
         };
         Cycles.add(cycle_amount);
         ignore management.deposit_cycles({ canister_id = id });
+        ignore _addLog(
+                    "Deposit Cycles Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(id)
+                    # " \n Cycle amount : \n "
+                    # debug_show(cycle_amount)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -223,6 +296,15 @@ shared(installer) actor class hub() = this{
         await management.stop_canister({ canister_id = id });
         ignore management.delete_canister({ canister_id = id });
         canisters.delete(id);
+        ignore _addLog(
+                    "Delete Canister Successfully : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Cainster id: \n "
+                    # debug_show(id)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -231,6 +313,13 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         cycle_wasm := wasm;
+        // ignore _addLog(
+        //             "Install CycleWasm : "
+        //             # " \n Caller : \n "
+        //             # debug_show(caller)
+        //             # " \n Time : \n "
+        //             # debug_show(Prim.time() >> 30)
+        // );
         #ok(())
     };
 
@@ -239,6 +328,13 @@ shared(installer) actor class hub() = this{
             return #err(#Invalid_Caller)
         };
         owners := TrieSet.fromArray<Principal>(newOwners, Principal.hash, Principal.equal);
+        ignore _addLog(
+                    "Change Owner : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
         #ok(())
     };
 
@@ -251,14 +347,24 @@ shared(installer) actor class hub() = this{
 
     public func wallet_receive() : async (){
         ignore Cycles.accept(Cycles.available())
+        ignore _addLog("Received Cycle, Amount : " # debug_show(Cycles.accept(Cycles.available())) # "Time: " # debug_show(Prim.time() >> 30));
+    };
+
+    private func _addLog(log : Text) : Nat{
+        let id = log_index;
+        ignore logs.put(id, log);
+        log_index += 1;
+        id
     };
 
     system func preupgrade(){
         canisters_entries := Iter.toArray(canisters.entries());
+        log_upgrade_params := logs.preupgrade();
     };
 
     system func postupgrade(){
         canisters_entries := [];
+        log_upgrade_params := (0, []);
     };
 
 };
