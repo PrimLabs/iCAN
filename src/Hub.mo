@@ -31,6 +31,7 @@ shared(installer) actor class hub() = this{
     stable var owners : TrieSet.Set<Principal> = TrieSet.fromArray<Principal>([installer.caller], Principal.hash, Principal.equal);
     stable var cycle_wasm : [Nat8] = [];
     stable var canisters_entries : [(Principal, Canister)] = [];
+    stable var log_index = 0;
     stable var log_upgrade_params : (Nat, [(Nat,(Nat64, Nat))]) = (0, []);
 
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
@@ -346,7 +347,7 @@ shared(installer) actor class hub() = this{
     };
 
     public func wallet_receive() : async (){
-        ignore Cycles.accept(Cycles.available())
+        ignore Cycles.accept(Cycles.available());
         ignore _addLog("Received Cycle, Amount : " # debug_show(Cycles.accept(Cycles.available())) # "Time: " # debug_show(Prim.time() >> 30));
     };
 
