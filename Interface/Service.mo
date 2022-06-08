@@ -49,6 +49,10 @@ actor Service {
         // @return Wasm Version
         getVersion : query() -> async Nat;
 
+        // get log of hub
+        // @return loglist
+        getLog : query() -> async [(Nat, Text)];
+
         // get owners of this hub canister
         // @return owners array
         getOwners : query() -> async [Principal];
@@ -61,6 +65,9 @@ actor Service {
 
         // get wasm of specified canister ( owner only )
         getWasm : query (canister_id : Principal) -> async Result.Result<[Nat8], Error>;
+
+        //clear hub's logs
+        clearLog : () -> async ()
 
         // put canister into hub ( not matter if not controlled by hub canister ) ( owner only )
         // @param c : should be put into hub canister
