@@ -1,6 +1,7 @@
 import Array "mo:base/Array";
 import Account "Lib/Account";
 import Blob "mo:base/Blob";
+import Bool "mo:base/Bool";
 import Bucket "Lib/Bucket";
 import Cycles "mo:base/ExperimentalCycles";
 import Iter "mo:base/Iter";
@@ -40,6 +41,10 @@ shared(installer) actor class hub() = this{
     let CURRENT_VERSION : Nat = 4;
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
     var logs = Logs.Logs(true);
+
+    public query({caller}) func isOwner() : async Bool{
+        TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)
+    };
 
     public query({caller}) func getLog() : async [(Nat, Text)]{
         assert(TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal));
