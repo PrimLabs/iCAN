@@ -2,10 +2,15 @@ type hub =
  service {
    canisterStatus: (principal) -> (Result_5);
    changeOwner: (vec principal) -> (Result);
+   addOwner：(principal) -> (Result);
+   deleteOwner： (principal) -> (Result);
    delCanister: (principal) -> (Result);
    deployCanister: (DeployArgs) -> (Result_4);
    depositCycles: (principal, nat) -> (Result);
-   getLog : () -> [(Nat, Text)] query;
+   get_log: () -> (vec record {
+                       nat;
+                       text;
+                     }) query;
    getCanisters: () -> (Result_3) query;
    getOwners: () -> (vec principal) query;
    getStatus: () -> (Result_2) query;
