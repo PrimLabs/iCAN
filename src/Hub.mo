@@ -38,7 +38,7 @@ shared(installer) actor class hub() = this{
     let CYCLE_MINTING_CANISTER = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
     let ledger : Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let management : Management = actor("aaaaa-aa");
-    let CURRENT_VERSION : Nat = 4;
+    let CURRENT_VERSION : Nat = 5;
     var canisters : TrieMap.TrieMap<Principal, Canister> = TrieMap.fromEntries(canisters_entries.vals(), Principal.equal, Principal.hash);
     var logs = Logs.Logs(true);
 

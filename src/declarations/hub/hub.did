@@ -1,25 +1,26 @@
 type hub = 
  service {
+   addOwner: (principal) -> (Result);
    canisterStatus: (principal) -> (Result_5);
    changeOwner: (vec principal) -> (Result);
-   addOwner：(principal) -> (Result);
-   deleteOwner： (principal) -> (Result);
+   clearLog: () -> ();
    delCanister: (principal) -> (Result);
+   deleteOwner: (principal) -> (Result);
    deployCanister: (DeployArgs) -> (Result_4);
    depositCycles: (principal, nat) -> (Result);
-   get_log: () -> (vec record {
-                       nat;
-                       text;
-                     }) query;
    getCanisters: () -> (Result_3) query;
+   getLog: () -> (vec record {
+                        nat;
+                        text;
+                      }) query;
    getOwners: () -> (vec principal) query;
    getStatus: () -> (Result_2) query;
    getVersion: () -> (nat) query;
    getWasm: (principal) -> (Result_1) query;
-   clearLog : () -> async ()
    init: (principal, vec nat8) -> ();
    installCycleWasm: (vec nat8) -> (Result);
    installWasm: (InstallArgs) -> (Result);
+   isOwner: () -> (bool) query;
    putCanister: (Canister) -> (Result);
    startCanister: (principal) -> (Result);
    stopCanister: (principal) -> (Result);

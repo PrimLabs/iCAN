@@ -1,4 +1,14 @@
 export const idlFactory = ({ IDL }) => {
+  const Error = IDL.Variant({
+    'Create_Canister_Failed' : IDL.Nat,
+    'Ledger_Transfer_Failed' : IDL.Nat,
+    'Insufficient_Cycles' : IDL.Null,
+    'No_Record' : IDL.Null,
+    'Invalid_CanisterId' : IDL.Null,
+    'Invalid_Caller' : IDL.Null,
+    'No_Wasm' : IDL.Null,
+  });
+  const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : Error });
   const definite_canister_settings = IDL.Record({
     'freezing_threshold' : IDL.Nat,
     'controllers' : IDL.Vec(IDL.Principal),
@@ -16,17 +26,7 @@ export const idlFactory = ({ IDL }) => {
     'settings' : definite_canister_settings,
     'module_hash' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
-  const Error = IDL.Variant({
-    'Create_Canister_Failed' : IDL.Nat,
-    'Ledger_Transfer_Failed' : IDL.Nat,
-    'Insufficient_Cycles' : IDL.Null,
-    'No_Record' : IDL.Null,
-    'Invalid_CanisterId' : IDL.Null,
-    'Invalid_Caller' : IDL.Null,
-    'No_Wasm' : IDL.Null,
-  });
   const Result_5 = IDL.Variant({ 'ok' : CanisterStatus, 'err' : Error });
-  const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : Error });
   const canister_settings = IDL.Record({
     'freezing_threshold' : IDL.Opt(IDL.Nat),
     'controllers' : IDL.Opt(IDL.Vec(IDL.Principal)),
@@ -68,12 +68,16 @@ export const idlFactory = ({ IDL }) => {
     'settings' : canister_settings,
   });
   const hub = IDL.Service({
+    'addOwner' : IDL.Func([IDL.Principal], [Result], []),
     'canisterStatus' : IDL.Func([IDL.Principal], [Result_5], []),
     'changeOwner' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
+    'clearLog' : IDL.Func([], [], []),
     'delCanister' : IDL.Func([IDL.Principal], [Result], []),
+    'deleteOwner' : IDL.Func([IDL.Principal], [Result], []),
     'deployCanister' : IDL.Func([DeployArgs], [Result_4], []),
     'depositCycles' : IDL.Func([IDL.Principal, IDL.Nat], [Result], []),
     'getCanisters' : IDL.Func([], [Result_3], ['query']),
+    'getLog' : IDL.Func([], [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Text))], ['query']),
     'getOwners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'getStatus' : IDL.Func([], [Result_2], ['query']),
     'getVersion' : IDL.Func([], [IDL.Nat], ['query']),
@@ -81,6 +85,7 @@ export const idlFactory = ({ IDL }) => {
     'init' : IDL.Func([IDL.Principal, IDL.Vec(IDL.Nat8)], [], []),
     'installCycleWasm' : IDL.Func([IDL.Vec(IDL.Nat8)], [Result], []),
     'installWasm' : IDL.Func([InstallArgs], [Result], []),
+    'isOwner' : IDL.Func([], [IDL.Bool], ['query']),
     'putCanister' : IDL.Func([Canister], [Result], []),
     'startCanister' : IDL.Func([IDL.Principal], [Result], []),
     'stopCanister' : IDL.Func([IDL.Principal], [Result], []),
