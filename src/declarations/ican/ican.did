@@ -26,8 +26,6 @@ type Error =
 service : {
   addHub: (text, principal) -> (text);
   changeAdministrator: (vec principal) -> (text);
-  addAdministrator：(principal) -> (text);
-  deleteAdministrator： (principal) -> (text);
   createHub: (text, nat64) -> (Result_1);
   deleteHub: (principal) -> (Result);
   getAdministrators: () -> (vec principal) query;
