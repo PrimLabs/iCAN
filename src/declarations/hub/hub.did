@@ -5,11 +5,13 @@ type hub =
    delCanister: (principal) -> (Result);
    deployCanister: (DeployArgs) -> (Result_4);
    depositCycles: (principal, nat) -> (Result);
+   getLog : () -> [(Nat, Text)] query;
    getCanisters: () -> (Result_3) query;
    getOwners: () -> (vec principal) query;
    getStatus: () -> (Result_2) query;
    getVersion: () -> (nat) query;
    getWasm: (principal) -> (Result_1) query;
+   clearLog : () -> async ()
    init: (principal, vec nat8) -> ();
    installCycleWasm: (vec nat8) -> (Result);
    installWasm: (InstallArgs) -> (Result);
