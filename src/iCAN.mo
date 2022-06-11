@@ -155,9 +155,7 @@ actor iCAN{
     public shared({caller}) func addHub(
         name : Text,
         hub_id : Principal
-    ) : async Text{
-        let canister = actor(hub_id);
-        assert(await canister.isOwner()); 
+    ) : async Text{ 
         switch(hubs.get(caller)){
             case null { hubs.put(caller, [(name, hub_id)]) };
             case(?ps){ hubs.put(caller, Array.append(ps, [(name, hub_id)])) }
