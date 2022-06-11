@@ -85,19 +85,6 @@ actor iCAN{
         "successfully"
     };
 
-    public shared({caller}) func addAdministrator(nas : Principal): async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
-        administrators := TrieSet.put<Principal>(administrators,nas,Principal.hash(nas), Principal.equal);
-        "successfully addAdministrator"
-    };
-
-    public shared({caller}) func deleteAdministrator(nas : Principal): async Text{
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
-        administrators := TrieSet.delete<Principal>(administrators,nas,Principal.hash(nas), Principal.equal);
-        "successfully deleteAdministrator"
-    };
-
-
     public shared({caller}) func createHub(name : Text, amount : Nat64) : async Result.Result<Principal, Error>{
         assert(amount > 2_000_000);
         let subaccount = Blob.fromArray(Account.principalToSubAccount(caller));
@@ -156,6 +143,7 @@ actor iCAN{
         name : Text,
         hub_id : Principal
     ) : async Text{ 
+        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
         switch(hubs.get(caller)){
             case null { hubs.put(caller, [(name, hub_id)]) };
             case(?ps){ hubs.put(caller, Array.append(ps, [(name, hub_id)])) }
