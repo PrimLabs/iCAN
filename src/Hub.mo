@@ -343,6 +343,39 @@ shared(installer) actor class hub() = this{
         );
         #ok(())
     };
+    public shared({caller}) func addOwner(nas : Principal): async Result.Result<(), Error>{
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        owners := TrieSet.put<Principal>(owners,nas, Principal.hash(nas), Principal.equal);
+        ignore _addLog(
+                    "Add Owner : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n NewOwner : \n "
+                    # debug_show(nas)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
+        #ok(())
+    };
+
+    public shared({caller}) func deleteOwner(nas : Principal): async Result.Result<(), Error>{
+        if(not TrieSet.mem<Principal>(owners, caller, Principal.hash(caller), Principal.equal)){
+            return #err(#Invalid_Caller)
+        };
+        owners := TrieSet.delete<Principal>(owners,nas, Principal.hash(nas), Principal.equal);
+        ignore _addLog(
+                    "Delete Owner : "
+                    # " \n Caller : \n "
+                    # debug_show(caller)
+                    # " \n DeletedOwner : \n "
+                    # debug_show(nas)
+                    # " \n Time : \n "
+                    # debug_show(Prim.time() >> 30)
+        );
+        #ok(())
+    };
 
     // ican calls this function when creating this hub
     public shared({caller}) func init(owner : Principal, _cycle_wasm : [Nat8]) : async (){
