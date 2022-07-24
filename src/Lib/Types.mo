@@ -15,6 +15,14 @@ module{
         #Create_Canister_Failed : Nat;
     };
 
+     public type Record = {
+        caller : Principal;
+        canister_id : Principal;
+        method : {#deploy; #deposit; #start; #stop; #delete; #install; #reinstall; #upgrade; #updateSettings; #changeOwner; #addOwner;#deleteOwner};
+        amount : Nat;
+        times : Time.Time;
+    };
+
     public type Canister = {
         name : Text;
         description : Text;
