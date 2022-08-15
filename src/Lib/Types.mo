@@ -7,12 +7,14 @@ module{
 
     public type Error = {
         #Invalid_Caller;
+        #Nonexistent_Caller;
         #Invalid_CanisterId;
         #No_Wasm;
         #No_Record;
         #Insufficient_Cycles;
         #Ledger_Transfer_Failed : Nat; // value : log id
         #Create_Canister_Failed : Nat;
+        #Delete_Hub_Failed;
     };
 
      public type Record = {
@@ -69,7 +71,7 @@ module{
     };
 
     public type CycleInterface = actor{
-        withdraw_cycles : () -> async ();
+        withdraw_cycles : {canister_id : Principal} -> async ();
     };
 
     /// Management Types
