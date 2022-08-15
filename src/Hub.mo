@@ -346,7 +346,7 @@ shared(installer) actor class hub() = this{
                 canister_id = id;
             });
             let from : CycleInterface = actor(Principal.toText(id));
-            await from.withdraw_cycles();
+            await from.withdraw_cycles(caller);
         };
         await management.stop_canister({ canister_id = id });
         ignore management.delete_canister({ canister_id = id });
