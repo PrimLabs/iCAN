@@ -17,6 +17,7 @@ actor iCAN{
     type Memo = Types.Memo;
     type AccountIdentifier = Types.AccountIdentifier;
     type SubAccount = Types.SubAccount;
+    type CycleInterface = Types.CycleInterface;
     type Ledger = Types.Ledger;
     type CMC = Types.CMC;
     type TransformArgs = Types.TransformArgs;
@@ -139,40 +140,60 @@ actor iCAN{
         }
     };
 
-    public shared({caller}) func addHub(
+    // public shared({caller}) func addHub(
+    //     name : Text,
+    //     hub_id : Principal
+    // ) : async Text{ 
+    //     assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
+    //     switch(hubs.get(caller)){
+    //         case null { hubs.put(caller, [(name, hub_id)]) };
+    //         case(?ps){ hubs.put(caller, Array.append(ps, [(name, hub_id)])) }
+    //     };
+    //     "success"
+    // };
+
+    public shared({caller}) func changeHubInfo(
         name : Text,
         hub_id : Principal
     ) : async Text{ 
-        assert(TrieSet.mem<Principal>(administrators, caller, Principal.hash(caller), Principal.equal));
-        switch(hubs.get(caller)){
-            case null { hubs.put(caller, [(name, hub_id)]) };
-            case(?ps){ hubs.put(caller, Array.append(ps, [(name, hub_id)])) }
-        };
+        ignore _changeHubInfo(caller,(name,hub_id));
         "success"
     };
 
     public shared({caller}) func deleteHub(
-        hub_id : Principal
+        hub_id : Principal, 
+        to_canister_id : Principal
     ) : async Result.Result<(), Error>{
+        var flag  = 0;
         switch(hubs.get(caller)){
-            case null { #err(#Invalid_Caller) };
-            case(?ps){
-                if(ps.size() > 1){
-                    let res = Array.init<(Text, Principal)>(ps.size() - 1, ("", Principal.fromActor(iCAN)));
-                    var _index = 0;
-                    for(p in ps.vals()){
-                        if(p.1 != hub_id){
-                            res[_index] := p;
-                            _index += 1;
-                        };
+            case(null) {return #err(#Nonexistent_Caller)};
+            case(?b) {
+                for (x in b.vals()){
+                    if (x.1 == hub_id){
+                        flag := 1;
                     };
-                    hubs.put(caller, Array.freeze<(Text, Principal)>(res));
-                }else{
-                    hubs.delete(caller);
                 };
-                #ok(())
+                if(flag == 0){return #err(#Invalid_Caller)};
             }
-        }
+        };
+        if((await management.canister_status({ canister_id = hub_id })).cycles > 10_000_000_000) {
+            await management.start_canister({ canister_id = hub_id });
+            await management.install_code({
+                arg = [];
+                wasm_module = cycle_wasm;
+                mode = #reinstall;
+                canister_id = hub_id;
+            });
+            let from : CycleInterface = actor(Principal.toText(hub_id));
+            await from.withdraw_cycles({ canister_id = to_canister_id});
+        };
+        await management.stop_canister({ canister_id = hub_id });
+        ignore management.delete_canister({ canister_id = hub_id });
+        switch(_delHub(caller,hub_id)){
+            case(#Err(_)){return #err(#Delete_Hub_Failed)};
+            case(#Ok){ };
+        };
+        #ok(())
     };
 
     public shared({caller}) func transformIcp(
@@ -250,6 +271,47 @@ actor iCAN{
         };
     };
 
+    private func _delHub(owner : Principal, args : Principal) : Result.Result<(), Text>{
+        switch(hubs.get(owner)){
+            case(null) { #err("can not find the owner") };
+            case(?b){
+                if(b.size() > 1){
+                    let res = Array.init<(Text, Principal)>(b.size() - 1, ("", Principal.fromActor(iCAN)));
+                    var _index = 0;
+                    for(p in b.vals()){
+                        if(p.1 != args){
+                            res[_index] := p;
+                            _index += 1;
+                        };
+                    };
+                    hubs.put(owner, Array.freeze<(Text, Principal)>(res));
+                }else{
+                    hubs.delete(owner);
+                };
+                #ok(())
+            }
+        };
+    };
+
+    private func _changeHubInfo(owner : Principal, args : (Text, Principal)) : Result.Result<(), Text>{
+        switch(hubs.get(owner)){
+            case(null) { #err("can not find the owner") };
+            case(?b){
+                let res = Array.init<(Text, Principal)>(b.size(), ("", Principal.fromActor(iCAN)));
+                var _index = 0;
+                for(p in b.vals()){
+                    if(p.1 != args.1){
+                        res[_index] := p;
+                    }else{
+                        res[_index] := args;
+                    };
+                    _index += 1;
+                };
+                hubs.put(owner, Array.freeze<(Text, Principal)>(res));
+                #ok(())
+            }
+        };
+    };
     // return log id
     private func _addLog(log : Text) : Nat{
         let id = log_index;
